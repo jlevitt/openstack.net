@@ -15,11 +15,11 @@
     <tags>openstack</tags>
     <dependencies>
       <group targetFramework="4.0">
-        <dependency id="SimpleRESTServices" version="1.2.0.0" />
+        <dependency id="SimpleRESTServices" version="1.2.0.2" />
         <dependency id="Newtonsoft.Json" version="5.0.6" />
       </group>
       <group targetFramework="3.5">
-        <dependency id="SimpleRESTServices" version="1.2.0.0" />
+        <dependency id="SimpleRESTServices" version="1.2.0.2" />
         <dependency id="Newtonsoft.Json" version="5.0.6" />
         <dependency id="TaskParallelLibrary" version="1.0.2856.0" />
       </group>
