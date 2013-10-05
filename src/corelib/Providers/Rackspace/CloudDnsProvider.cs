@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
@@ -223,6 +224,260 @@
                 .ContinueWith(resultSelector);
         }
 
+        /// <inheritdoc/>
+        public Task<IEnumerable<DnsDomain>> ListDomainsAsync(string domainName, int? offset, int? limit, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/?name={name}&offset={offset}&limit={limit}");
+            var parameters = new Dictionary<string, string>();
+            if (domainName != null)
+                parameters.Add("name", domainName);
+            if (offset != null)
+                parameters.Add("offset", offset.ToString());
+            if (limit != null)
+                parameters.Add("limit", limit.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, IEnumerable<DnsDomain>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    JToken domains = result["domains"];
+                    if (domains == null)
+                        return null;
+
+                    return domains.ToObject<DnsDomain[]>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsDomain> ListDomainDetailsAsync(string domainId, bool showRecords, bool showSubdomains, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}?showRecords={showRecords}&showSubdomains={showSubdomains}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "domainId", domainId },
+                { "showRecords", showRecords ? "true" : "false" },
+                { "showSubdomains", showSubdomains ? "true" : "false" },
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsDomain> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsDomain>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsDomainChanges> ListDomainChangesAsync(string domainId, DateTimeOffset? since, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/changes?since={since}");
+            var parameters = new Dictionary<string, string>()
+                {
+                    { "domainId", domainId },
+                };
+            if (since.HasValue)
+                parameters.Add("since", since.Value.ToString("G"));
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsDomainChanges> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsDomainChanges>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<ExportedDomain>> ExportDomainAsync(string domainId, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/export");
+            var parameters = new Dictionary<string, string>()
+                {
+                    { "domainId", domainId },
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<ExportedDomain>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<ExportedDomain> job = task.Result.ToObject<DnsJob<ExportedDomain>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<ExportedDomain>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<DnsDomains>> CreateDomainsAsync(DnsConfiguration configuration, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains");
+            var parameters = new Dictionary<string, string>();
+
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, configuration);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<DnsDomains>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<DnsDomains>> CloneDomainAsync(string domainId, string cloneName, bool? cloneSubdomains, bool? modifyRecordData, bool? modifyEmailAddress, bool? modifyComment, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/clone?cloneName={cloneName}&cloneSubdomains={cloneSubdomains}&modifyRecordData={modifyRecordData}&modifyEmailAddress={modifyEmailAddress}&modifyComment={modifyComment}");
+            var parameters = new Dictionary<string, string> { { "domainId", domainId }, { "cloneName", cloneName } };
+            if (cloneSubdomains != null)
+                parameters.Add("cloneSubdomains", cloneSubdomains.Value ? "true" : "false");
+            if (modifyRecordData != null)
+                parameters.Add("modifyRecordData", modifyRecordData.Value ? "true" : "false");
+            if (modifyEmailAddress != null)
+                parameters.Add("modifyEmailAddress", modifyEmailAddress.Value ? "true" : "false");
+            if (modifyComment != null)
+                parameters.Add("modifyComment", modifyComment.Value ? "true" : "false");
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<DnsDomains>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains?deleteSubdomains={deleteSubdomains}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "deleteSubdomains", deleteSubdomains ? "true" : "false" },
+            };
+
+            Func<Uri, Uri> transform =
+                uri =>
+                {
+                    UriBuilder builder = new UriBuilder(uri);
+                    builder.Query = builder.Query.TrimStart('?') + string.Concat(domainIds.Select(domainId => "&id=" + domainId));
+                    return builder.Uri;
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, transform);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob job = task.Result.ToObject<DnsJob>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
         #endregion
 
         protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)
@@ -311,13 +566,17 @@
             return authenticate.ContinueWith(getBaseUri).Unwrap();
         }
 
-        private Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> PrepareRequestAsyncFunc(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters)
+        private Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> PrepareRequestAsyncFunc(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters, Func<Uri, Uri> uriTransform = null)
         {
             return
                 task =>
                 {
                     Uri baseUri = task.Result.Item2;
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(template.BindByName(baseUri, parameters));
+                    Uri boundUri = template.BindByName(baseUri, parameters);
+                    if (uriTransform != null)
+                        boundUri = uriTransform(boundUri);
+
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(boundUri);
                     request.Method = method.ToString().ToUpperInvariant();
                     request.Accept = JsonRequestSettings.JsonContentType;
                     request.Headers["X-Auth-Token"] = task.Result.Item1.Id;
@@ -371,11 +630,6 @@
                 {
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
-            //Func<Task<WebResponse>, HttpWebResponse> checkResult =
-            //    task =>
-            //    {
-            //        return (HttpWebResponse)task.Result;
-            //    };
             Func<Task<WebResponse>, string> readResult =
                 task =>
                 {
@@ -389,7 +643,6 @@
                 task =>
                 {
                     return task.ContinueWith(requestResource).Unwrap()
-                        //.ContinueWith(checkResult)
                         .ContinueWith(readResult);
                 };
 
