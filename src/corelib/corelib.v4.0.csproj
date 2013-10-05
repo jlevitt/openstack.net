@@ -100,6 +100,7 @@
     <Compile Include="Core\Exceptions\Response\NamespaceDoc.cs" />
     <Compile Include="Core\Exceptions\SnapshotEnteredErrorStateException.cs" />
     <Compile Include="Core\Exceptions\VolumeEnteredErrorStateException.cs" />
+    <Compile Include="Core\ExtensibleEnum`1.cs" />
     <Compile Include="Core\InternalTaskExtensions.cs" />
     <Compile Include="Core\NamespaceDoc.cs" />
     <Compile Include="Core\Domain\Claim.cs" />
@@ -115,7 +116,12 @@
     <Compile Include="Core\Synchronous\ClaimExtensions.cs" />
     <Compile Include="Core\Synchronous\QueueingServiceExtensions.cs" />
     <Compile Include="Core\Validators\NamespaceDoc.cs" />
+    <Compile Include="Providers\Rackspace\CloudDnsProvider.cs" />
     <Compile Include="Providers\Rackspace\CloudQueuesProvider.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsRateLimit.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsRateLimitPattern.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsRateLimits.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsServiceLimits.cs" />
     <Compile Include="Providers\Rackspace\Exceptions\BulkDeletionException.cs" />
     <Compile Include="Core\HttpStatusCodeParser.cs" />
     <Compile Include="Core\IStatusParser.cs" />
@@ -160,6 +166,8 @@
     <Compile Include="Core\Exceptions\NoDefaultRegionSetException.cs" />
     <Compile Include="Core\Exceptions\ServerEnteredErrorStateException.cs" />
     <Compile Include="Providers\Rackspace\Exceptions\NamespaceDoc.cs" />
+    <Compile Include="Providers\Rackspace\IDnsService.cs" />
+    <Compile Include="Providers\Rackspace\Objects\LimitType.cs" />
     <Compile Include="Providers\Rackspace\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\Objects\BulkDeletionFailedObject.cs" />
     <Compile Include="Providers\Rackspace\Objects\BulkDeletionResults.cs" />
