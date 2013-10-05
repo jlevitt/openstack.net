@@ -17,6 +17,7 @@
     using JsonRequestSettings = JSIStudios.SimpleRESTServices.Client.Json.JsonRequestSettings;
     using Stream = System.IO.Stream;
     using StreamReader = System.IO.StreamReader;
+    using Thread = System.Threading.Thread;
 
     public class CloudDnsProvider : ProviderBase<IDnsService>, IDnsService
     {
@@ -148,7 +149,125 @@
                 .ContinueWith(resultSelector);
         }
 
+        /// <inheritdoc/>
+        public Task<DnsJob> GetJobStatus(string jobId, bool showDetails, CancellationToken cancellationToken)
+        {
+            if (jobId == null)
+                throw new ArgumentNullException("jobId");
+            if (string.IsNullOrEmpty(jobId))
+                throw new ArgumentException("jobId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/status/{jobId}?showDetails={showDetails}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "jobId", jobId },
+                    { "showDetails", showDetails ? "true" : "false" },
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsJob>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<TResult>> GetJobStatus<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken)
+        {
+            if (jobId == null)
+                throw new ArgumentNullException("jobId");
+            if (string.IsNullOrEmpty(jobId))
+                throw new ArgumentException("jobId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/status/{jobId}?showDetails={showDetails}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "jobId", jobId },
+                    { "showDetails", showDetails ? "true" : "false" },
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<TResult>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsJob<TResult>>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
         #endregion
+
+        protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)
+        {
+            Func<DnsJob> func =
+                () =>
+                {
+                    while (true)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        DnsJob job = GetJobStatus(jobId, false, cancellationToken).Result;
+                        if (job == null || job.Id != jobId)
+                            throw new InvalidOperationException("Could not obtain status for job.");
+
+                        if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
+                            return job;
+
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                };
+
+            return Task.Factory.StartNew(func);
+        }
+
+        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, CancellationToken cancellationToken)
+        {
+            Func<DnsJob<TResult>> func =
+                () =>
+                {
+                    while (true)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        DnsJob<TResult> job = GetJobStatus<TResult>(jobId, false, cancellationToken).Result;
+                        if (job == null || job.Id != jobId)
+                            throw new InvalidOperationException("Could not obtain status for job.");
+
+                        if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
+                            return job;
+
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                };
+
+            return Task.Factory.StartNew(func);
+        }
 
         private Task<Uri> GetBaseUriAsync(CancellationToken cancellationToken)
         {

@@ -117,6 +117,9 @@
     <Compile Include="Core\Validators\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\CloudDnsProvider.cs" />
     <Compile Include="Providers\Rackspace\CloudQueuesProvider.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsJob.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsJobStatus.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsJob`1.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimit.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimitPattern.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimits.cs" />
