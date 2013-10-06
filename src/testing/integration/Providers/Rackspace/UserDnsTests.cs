@@ -272,6 +272,96 @@
         }
 
         /// <summary>
+        /// This tests the behavior of the <see cref="IDnsService.CloneDomainsAsync"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        [TestMethod]
+        [TestCategory(TestCategories.User)]
+        [TestCategory(TestCategories.Dns)]
+        public async Task TestDomainExportImport()
+        {
+            string domainName = CreateRandomDomainName();
+
+            IDnsService provider = CreateProvider();
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
+            {
+                List<string> domainsToRemove = new List<string>();
+
+                DnsConfiguration configuration = new DnsConfiguration(
+                    new DnsDomainConfiguration(
+                        name: domainName,
+                        timeToLive: default(TimeSpan?),
+                        emailAddress: "admin@" + domainName,
+                        comment: "Integration test domain",
+                        records: new DnsDomainRecordConfiguration[] { },
+                        subdomains: new DnsSubdomainConfiguration[] { }));
+
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> details = await provider.GetJobStatus<DnsDomains>(createResponse.Id, true, cancellationTokenSource.Token);
+                if (createResponse.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(details.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to create a test domain.");
+                }
+                else
+                {
+                    Console.WriteLine(JsonConvert.SerializeObject(details.Response, Formatting.Indented));
+                    domainsToRemove.AddRange(details.Response.Domains.Select(i => i.Id));
+                }
+
+                DnsJob<ExportedDomain> exportedDomain = await provider.ExportDomainAsync(details.Response.Domains[0].Id, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                exportedDomain = await provider.GetJobStatus<ExportedDomain>(exportedDomain.Id, true, cancellationTokenSource.Token);
+                if (exportedDomain.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(exportedDomain.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to export test domain.");
+                }
+
+                Assert.AreEqual(DnsJobStatus.Completed, exportedDomain.Status);
+                Assert.IsNotNull(exportedDomain.Response);
+                Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Id));
+                Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.AccountId));
+                Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Contents));
+                Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.ContentType));
+
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteDetails = await provider.GetJobStatus(deleteResponse.Id, true, cancellationTokenSource.Token);
+                if (deleteDetails.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(deleteDetails.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to delete temporary domain created during the integration test.");
+                }
+
+                domainsToRemove.Clear();
+
+                SerializedDomain serializedDomain =
+                    new SerializedDomain(
+                        exportedDomain.Response.Contents,
+                        exportedDomain.Response.ContentType);
+                DnsJob<DnsDomains> importedDomain = await provider.ImportDomainAsync(new[] { serializedDomain }, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                importedDomain = await provider.GetJobStatus<DnsDomains>(importedDomain.Id, true, cancellationTokenSource.Token);
+                if (importedDomain.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(importedDomain.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to import the test domain.");
+                }
+                else
+                {
+                    Console.WriteLine(JsonConvert.SerializeObject(importedDomain.Response, Formatting.Indented));
+                    domainsToRemove.AddRange(importedDomain.Response.Domains.Select(i => i.Id));
+                }
+
+                deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                deleteDetails = await provider.GetJobStatus(deleteResponse.Id, true, cancellationTokenSource.Token);
+                if (deleteDetails.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(deleteDetails.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to delete temporary domain created during the integration test.");
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets all existing domains through a series of asynchronous operations,
         /// each of which requests a subset of the available domains.
         /// </summary>

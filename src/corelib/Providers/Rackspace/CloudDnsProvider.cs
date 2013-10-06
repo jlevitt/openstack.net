@@ -436,6 +436,42 @@
         }
 
         /// <inheritdoc/>
+        public Task<DnsJob<DnsDomains>> ImportDomainAsync(IEnumerable<SerializedDomain> serializedDomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            if (serializedDomains == null)
+                throw new ArgumentNullException("serializedDomains");
+
+            UriTemplate template = new UriTemplate("/domains/import");
+            var parameters = new Dictionary<string, string>();
+
+            JObject request = new JObject(new JProperty("domains", JArray.FromObject(serializedDomains)));
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, request);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<DnsDomains>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
         public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains?deleteSubdomains={deleteSubdomains}");
