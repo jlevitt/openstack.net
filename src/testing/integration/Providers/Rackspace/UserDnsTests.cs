@@ -411,7 +411,7 @@
         private TimeSpan TestTimeout(TimeSpan timeout)
         {
             if (Debugger.IsAttached)
-                return TimeSpan.MaxValue;
+                return TimeSpan.FromDays(1);
 
             return timeout;
         }
