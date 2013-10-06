@@ -514,6 +514,45 @@
                 .ContinueWith(resultSelector);
         }
 
+        /// <inheritdoc/>
+        public Task<IEnumerable<DnsSubdomain>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/subdomains?offset={offset}&limit={limit}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "domainId", domainId }
+                };
+            if (offset != null)
+                parameters.Add("offset", offset.ToString());
+            if (limit != null)
+                parameters.Add("limit", limit.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, IEnumerable<DnsSubdomain>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    JToken domains = result["domains"];
+                    if (domains == null)
+                        return null;
+
+                    return domains.ToObject<DnsSubdomain[]>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
         #endregion
 
         protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)

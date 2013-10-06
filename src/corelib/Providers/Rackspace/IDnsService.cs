@@ -49,5 +49,11 @@
         Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken);
 
         #endregion
+
+        #region Subdomains
+
+        Task<IEnumerable<DnsSubdomain>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken);
+
+        #endregion
     }
 }

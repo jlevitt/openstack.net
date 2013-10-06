@@ -368,6 +368,82 @@
             }
         }
 
+        [TestMethod]
+        [TestCategory(TestCategories.User)]
+        [TestCategory(TestCategories.Dns)]
+        public async Task TestCreateSubdomain()
+        {
+            string domainName = CreateRandomDomainName();
+            string subdomainName = "www";
+
+            IDnsService provider = CreateProvider();
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(30))))
+            {
+                DnsConfiguration configuration = new DnsConfiguration(
+                    new DnsDomainConfiguration(
+                        name: domainName,
+                        timeToLive: default(TimeSpan?),
+                        emailAddress: "admin@" + domainName,
+                        comment: "Integration test domain",
+                        records: new DnsDomainRecordConfiguration[] { },
+                        subdomains: new DnsSubdomainConfiguration[]
+                            {
+                                new DnsSubdomainConfiguration(
+                                    emailAddress: string.Format("sub-admin@{0}.{1}", subdomainName, domainName),
+                                    name: string.Format("{0}.{1}", subdomainName, domainName),
+                                    comment: "Integration test subdomain")
+                            }));
+
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> details = await provider.GetJobStatus<DnsDomains>(createResponse.Id, true, cancellationTokenSource.Token);
+                IEnumerable<DnsDomain> createdDomains = Enumerable.Empty<DnsDomain>();
+                if (createResponse.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(details.Error.ToString(Formatting.Indented));
+                    Assert.Fail();
+                }
+                else
+                {
+                    Console.WriteLine(JsonConvert.SerializeObject(details.Response, Formatting.Indented));
+                    createdDomains = details.Response.Domains;
+                }
+
+                DnsDomain[] domains = ListAllDomains(provider, domainName, null, cancellationTokenSource.Token).ToArray();
+                Assert.IsNotNull(domains);
+
+                if (!domains.Any())
+                    Assert.Inconclusive("No domains were returned by the server");
+
+                foreach (var domain in domains)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Domain: {0} ({1})", domain.Name, domain.Id);
+                    Console.WriteLine();
+                    Console.WriteLine(await JsonConvert.SerializeObjectAsync(domain, Formatting.Indented));
+                }
+
+                string domainId = details.Response.Domains[0].Id;
+                DnsSubdomain[] subdomains = ListAllSubdomains(provider, domainId, null, cancellationTokenSource.Token).ToArray();
+                Assert.IsNotNull(subdomains);
+                Assert.AreEqual(1, subdomains.Length);
+                foreach (var subdomain in subdomains)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Subdomain: {0} ({1})", subdomain.Name, subdomain.Id);
+                    Console.WriteLine();
+                    Console.WriteLine(await JsonConvert.SerializeObjectAsync(subdomain, Formatting.Indented));
+                }
+
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteDetails = await provider.GetJobStatus(deleteResponse.Id, true, cancellationTokenSource.Token);
+                if (deleteDetails.Status == DnsJobStatus.Error)
+                {
+                    Console.WriteLine(deleteDetails.Error.ToString(Formatting.Indented));
+                    Assert.Fail("Failed to delete temporary domain created during the integration test.");
+                }
+            }
+        }
+
         /// <summary>
         /// Gets all existing domains through a series of asynchronous operations,
         /// each of which requests a subset of the available domains.
@@ -404,6 +480,54 @@
                 {
                     index++;
                     yield return domain;
+                }
+
+                if (limit == null)
+                {
+                    // this service will return a 400 error if offset is not a multiple of limit,
+                    // or if the limit is not specified
+                    limit = index;
+                }
+            } while (index > previousIndex);
+        }
+
+        /// <summary>
+        /// Gets all existing subdomains for a particular domain through a series of
+        /// asynchronous operations, each of which requests a subset of the available
+        /// subdomains.
+        /// </summary>
+        /// <remarks>
+        /// Each of the returned tasks is executed asynchronously but sequentially. This
+        /// method will not send concurrent requests to the DNS service.
+        /// <para>
+        /// Due to the way the list end is detected, the final task will return an empty
+        /// collection of <see cref="DnsSubdomain"/> instances.
+        /// </para>
+        /// </remarks>
+        /// <param name="provider">The DNS service.</param>
+        /// <param name="limit">The maximum number of <see cref="DnsSubdomain"/> objects to return from a single task. If this value is <c>null</c>, a provider-specific default is used.</param>
+        /// <param name="detailed"><c>true</c> to return detailed information for each subdomain; otherwise, <c>false</c>.</param>
+        /// <returns>
+        /// A collections of <see cref="Task{TResult}"/> objects, each of which
+        /// represents an asynchronous operation to gather a subset of the available
+        /// subdomains.
+        /// </returns>
+        private static IEnumerable<DnsSubdomain> ListAllSubdomains(IDnsService provider, string domainId, int? limit, CancellationToken cancellationToken)
+        {
+            if (limit <= 0)
+                throw new ArgumentOutOfRangeException("limit");
+
+            int index = 0;
+            int previousIndex;
+
+            do
+            {
+                previousIndex = index;
+                Task<IEnumerable<DnsSubdomain>> subdomains = provider.ListSubdomainsAsync(domainId, index, limit, cancellationToken);
+                foreach (DnsSubdomain subdomain in subdomains.Result)
+                {
+                    index++;
+                    yield return subdomain;
                 }
 
                 if (limit == null)
