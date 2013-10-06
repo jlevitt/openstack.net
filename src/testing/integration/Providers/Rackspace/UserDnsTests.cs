@@ -45,16 +45,23 @@
         [TestCategory(TestCategories.Cleanup)]
         public void CleanupTestDomains()
         {
+            const int BatchSize = 10;
+
             IDnsService provider = CreateProvider();
             using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
             {
-                DnsDomain[] allDomains = ListAllDomains(provider, null, null, cancellationTokenSource.Token).ToArray();
-                Task[] deleteTasks = Array.ConvertAll(allDomains, domain =>
+                DnsDomain[] allDomains = ListAllDomains(provider, null, null, cancellationTokenSource.Token).Where(i => i.Name.StartsWith(TestDomainPrefix, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                List<Task> deleteTasks = new List<Task>();
+                for (int i = 0; i < allDomains.Length; i += BatchSize)
                 {
-                    Console.WriteLine("Deleting domain: {0}", domain.Name);
-                    return provider.RemoveDomainsAsync(new[] { domain.Id }, true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
-                });
-                Task.WaitAll(deleteTasks);
+                    for (int j = i; j < i + BatchSize && j < allDomains.Length; j++)
+                        Console.WriteLine("Deleting domain: {0}", allDomains[j].Name);
+
+                    deleteTasks.Add(provider.RemoveDomainsAsync(allDomains.Skip(i).Take(BatchSize).Select(domain => domain.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token));
+                }
+
+                Task.WaitAll(deleteTasks.ToArray());
             }
         }
 
