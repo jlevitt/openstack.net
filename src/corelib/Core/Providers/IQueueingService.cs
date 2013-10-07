@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Threading.Tasks;
     using net.openstack.Core.Domain;
     using Newtonsoft.Json.Linq;
@@ -121,7 +122,7 @@
         /// </summary>
         /// <remarks>
         /// When the claim is no longer required, the code should call <see cref="Claim.DisposeAsync"/>
-        /// or <see cref="Claim.Dispose"/> to ensure the following actions are taken.
+        /// or <see cref="Claim.Dispose()"/> to ensure the following actions are taken.
         /// <list type="bullet">
         /// <item>Messages which are part of this claim which were not processed are made available to other nodes.</item>
         /// <item>The claim resource is cleaned up without waiting for the time-to-live to expire.</item>
@@ -143,6 +144,9 @@
         /// <summary>
         /// Gets detailed information about the current state of a claim.
         /// </summary>
+        /// <remarks>
+        /// <note type="caller">Use <see cref="Claim.RefreshAsync"/> instead of calling this method directly.</note>
+        /// </remarks>
         /// <param name="queueName">The queue name.</param>
         /// <param name="claim">The claim to query.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
@@ -155,11 +159,15 @@
         /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Query_Claim">Query Claim (OpenStack Marconi API v1 Blueprint)</seealso>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         Task<Claim> QueryClaimAsync(string queueName, Claim claim, CancellationToken cancellationToken);
 
         /// <summary>
         /// Renews a claim, by updating the time-to-live and resetting the age of the claim to zero.
         /// </summary>
+        /// <remarks>
+        /// <note type="caller">Use <see cref="Claim.RenewAsync"/> instead of calling this method directly.</note>
+        /// </remarks>
         /// <param name="queueName">The queue name.</param>
         /// <param name="claim">The claim to renew.</param>
         /// <param name="timeToLive">The updated time-to-live for the claim.</param>
@@ -174,12 +182,16 @@
         /// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeToLive"/> is negative.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Update_Claim">Update Claim (OpenStack Marconi API v1 Blueprint)</seealso>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         Task UpdateClaimAsync(string queueName, Claim claim, TimeSpan timeToLive, CancellationToken cancellationToken);
 
         /// <summary>
         /// Immediately release a claim, making any (remaining, non-deleted) messages associated
         /// with the claim available to other workers.
         /// </summary>
+        /// <remarks>
+        /// <note type="caller">Use <see cref="Claim.DisposeAsync"/> instead of calling this method directly.</note>
+        /// </remarks>
         /// <param name="queueName">The queue name.</param>
         /// <param name="claim">The claim to release.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
@@ -192,6 +204,7 @@
         /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Release_Claim">Release Claim (OpenStack Marconi API v1 Blueprint)</seealso>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         Task ReleaseClaimAsync(string queueName, Claim claim, CancellationToken cancellationToken);
 
         #endregion

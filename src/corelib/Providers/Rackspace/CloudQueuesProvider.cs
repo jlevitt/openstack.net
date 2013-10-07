@@ -611,7 +611,7 @@
                 GetResponseAsyncFunc<Tuple<Uri, IEnumerable<QueuedMessage>>>(cancellationToken, parseResult);
 
             Func<Task<Tuple<Uri, IEnumerable<QueuedMessage>>>, Claim> resultSelector =
-                task => new Claim(this, queueName, task.Result.Item1, timeToLive, TimeSpan.Zero, task.Result.Item2);
+                task => new Claim(this, queueName, task.Result.Item1, timeToLive, TimeSpan.Zero, true, task.Result.Item2);
 
             // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
