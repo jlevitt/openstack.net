@@ -160,7 +160,7 @@
                 {
                     { "detailed", detailed.ToString().ToLowerInvariant() },
                 };
-            if (marker != null)
+            if (!string.IsNullOrEmpty(marker))
                 parameters.Add("marker", marker);
             if (limit.HasValue)
                 parameters.Add("limit", limit.ToString());
@@ -288,6 +288,11 @@
         /// <inheritdoc/>
         public Task<JObject> GetQueueMetadataAsync(string queueName, CancellationToken cancellationToken)
         {
+            if (queueName == null)
+                throw new ArgumentNullException("queueName");
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentException("queueName cannot be empty");
+
             return GetQueueMetadataAsync<JObject>(queueName, cancellationToken);
         }
 
@@ -385,8 +390,12 @@
         {
             if (queueName == null)
                 throw new ArgumentNullException("queueName");
+            if (messageId == null)
+                throw new ArgumentNullException("messageId");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (string.IsNullOrEmpty(messageId))
+                throw new ArgumentException("messageId cannot be empty");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages/{message_id}");
 
@@ -418,6 +427,8 @@
                 throw new ArgumentNullException("messageIds");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (messageIds.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("messageIds cannot contain any null or empty values");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages?ids={ids}");
 
@@ -443,6 +454,13 @@
         /// <inheritdoc/>
         public Task PostMessagesAsync(string queueName, IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
+            if (queueName == null)
+                throw new ArgumentNullException("queueName");
+            if (messages == null)
+                throw new ArgumentNullException("messages");
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentException("queueName cannot be empty");
+
             return PostMessagesAsync(queueName, cancellationToken, messages.ToArray());
         }
 
@@ -455,6 +473,8 @@
                 throw new ArgumentNullException("messages");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (messages.Contains(null))
+                throw new ArgumentException("messages cannot contain any null values");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages");
 
@@ -479,6 +499,13 @@
         /// <inheritdoc/>
         public Task PostMessagesAsync<T>(string queueName, IEnumerable<Message<T>> messages, CancellationToken cancellationToken)
         {
+            if (queueName == null)
+                throw new ArgumentNullException("queueName");
+            if (messages == null)
+                throw new ArgumentNullException("messages");
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentException("queueName cannot be empty");
+
             return PostMessagesAsync(queueName, cancellationToken, messages.ToArray());
         }
 
@@ -491,6 +518,8 @@
                 throw new ArgumentNullException("messages");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (messages.Contains(null))
+                throw new ArgumentException("messages cannot contain any null values");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages");
 
@@ -517,8 +546,12 @@
         {
             if (queueName == null)
                 throw new ArgumentNullException("queueName");
+            if (messageId == null)
+                throw new ArgumentNullException("messageId");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (string.IsNullOrEmpty(messageId))
+                throw new ArgumentException("messageId cannot be empty");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages/{message_id}?claim_id={claim_id}");
 
@@ -552,6 +585,8 @@
                 throw new ArgumentNullException("messageIds");
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
+            if (messageIds.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("messageIds cannot contain any null or empty values");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages?ids={ids}");
 
@@ -583,6 +618,10 @@
                 throw new ArgumentException("queueName cannot be empty");
             if (limit < 0)
                 throw new ArgumentOutOfRangeException("limit");
+            if (timeToLive <= TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("timeToLive");
+            if (gracePeriod < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("gracePeriod");
 
             UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/claims?limit={limit}");
 
