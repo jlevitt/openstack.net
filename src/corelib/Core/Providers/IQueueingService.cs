@@ -6,6 +6,7 @@
     using net.openstack.Core.Domain;
     using Newtonsoft.Json.Linq;
     using CancellationToken = System.Threading.CancellationToken;
+    using WebException = System.Net.WebException;
 
     /// <summary>
     /// 
@@ -115,21 +116,54 @@
 
         #region Claims
 
+        /// <summary>
+        /// Claim messages from a queue.
+        /// </summary>
+        /// <remarks>
+        /// When the claim is no longer required, the code should call <see cref="Claim.DisposeAsync"/>
+        /// or <see cref="Claim.Dispose"/> to ensure the following actions are taken.
+        /// <list type="bullet">
+        /// <item>Messages which are part of this claim which were not processed are made available to other nodes.</item>
+        /// <item>The claim resource is cleaned up without waiting for the time-to-live to expire.</item>
+        /// </list>
+        ///
+        /// <para>Messages which are not deleted before the claim is released will be eligible for
+        /// reclaiming by another process.</para>
+        /// </remarks>
+        /// <param name="queueName">The queue name.</param>
+        /// <param name="limit">The maximum number of messages to claim. If this value is <c>null</c>, a provider-specific default value is used.</param>
+        /// <param name="timeToLive">The time to wait before the server automatically releases the claim.</param>
+        /// <param name="gracePeriod">The time to wait, after the time-to-live for the claim expires, before the server allows the claimed messages to be deleted due to the individual message's time-to-live expiring.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully, the <see cref="Task{TResult}.Result"/> property will contain <see cref="Claim"/> object representing the claim.</returns>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Claim_Messages">Claim Messages (OpenStack Marconi API v1 Blueprint)</seealso>
         Task<Claim> ClaimMessageAsync(string queueName, int? limit, TimeSpan timeToLive, TimeSpan gracePeriod, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets detailed information about the current state of a claim.
+        /// </summary>
+        /// <param name="queueName">The queue name.</param>
+        /// <param name="claim">The claim to query.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully, the <see cref="Task{TResult}.Result"/> property will contain a <see cref="Claim"/> object representing the claim.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="queueName"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="claim"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Query_Claim">Query Claim (OpenStack Marconi API v1 Blueprint)</seealso>
         Task<Claim> QueryClaimAsync(string queueName, Claim claim, CancellationToken cancellationToken);
 
-        /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Update_Claim">Update Claim (OpenStack Marconi API v1 Blueprint)</seealso>
-        Task UpdateClaimAsync(string queueName, Claim claim, TimeSpan timeToLive, CancellationToken cancellationToken);
-
         /// <summary>
-        /// Immediately release a claim, making any (remaining, non-deleted) messages associated
-        /// with the claim available to other workers.
+        /// Renews a claim, by updating the time-to-live and resetting the age of the claim to zero.
         /// </summary>
-        /// <param name="queueName">The name of the queue.</param>
-        /// <param name="claim">The claim to release.</param>
+        /// <param name="queueName">The queue name.</param>
+        /// <param name="claim">The claim to renew.</param>
+        /// <param name="timeToLive">The updated time-to-live for the claim.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
         /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="queueName"/> is <c>null</c>.
@@ -137,6 +171,26 @@
         /// <para>If <paramref name="claim"/> is <c>null</c>.</para>
         /// </exception>
         /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeToLive"/> is negative.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Update_Claim">Update Claim (OpenStack Marconi API v1 Blueprint)</seealso>
+        Task UpdateClaimAsync(string queueName, Claim claim, TimeSpan timeToLive, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Immediately release a claim, making any (remaining, non-deleted) messages associated
+        /// with the claim available to other workers.
+        /// </summary>
+        /// <param name="queueName">The queue name.</param>
+        /// <param name="claim">The claim to release.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="queueName"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="claim"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Release_Claim">Release Claim (OpenStack Marconi API v1 Blueprint)</seealso>
         Task ReleaseClaimAsync(string queueName, Claim claim, CancellationToken cancellationToken);
 
