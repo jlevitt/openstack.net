@@ -115,7 +115,7 @@
         }
 
         /// <inheritdoc/>
-        public Task CreateQueueAsync(string queueName, CancellationToken cancellationToken)
+        public Task<bool> CreateQueueAsync(string queueName, CancellationToken cancellationToken)
         {
             if (queueName == null)
                 throw new ArgumentNullException("queueName");
@@ -131,8 +131,17 @@
             Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
                 PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters);
 
-            Func<Task<HttpWebRequest>, Task<string>> requestResource =
-                GetResponseAsyncFunc(cancellationToken);
+            Func<Task<Tuple<HttpWebResponse, string>>, Task<bool>> parseResult =
+                task =>
+                {
+                    if (task.Result.Item1.StatusCode == HttpStatusCode.Created)
+                        return InternalTaskExtensions.CompletedTask(true);
+                    else
+                        return InternalTaskExtensions.CompletedTask(false);
+                };
+
+            Func<Task<HttpWebRequest>, Task<bool>> requestResource =
+                GetResponseAsyncFunc(cancellationToken, parseResult);
 
             // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)

@@ -94,7 +94,12 @@
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             string queueName = CreateRandomQueueName();
 
-            await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
+            bool created = await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
+            Assert.IsTrue(created);
+
+            bool recreated = await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
+            Assert.IsFalse(recreated);
+
             await provider.DeleteQueueAsync(queueName, cancellationTokenSource.Token);
         }
 
@@ -271,7 +276,7 @@
             Console.WriteLine("Creating request queue...");
             await provider.CreateQueueAsync(requestQueueName, testCancellationTokenSource.Token);
             Console.WriteLine("Creating {0} response queues...", responseQueueNames.Length);
-            await Task.Factory.ContinueWhenAll(responseQueueNames.Select(queueName => provider.CreateQueueAsync(queueName, testCancellationTokenSource.Token)).ToArray(), TaskExtrasExtensions.PropagateExceptions);
+            await Task.Factory.ContinueWhenAll(responseQueueNames.Select(queueName => (Task)provider.CreateQueueAsync(queueName, testCancellationTokenSource.Token)).ToArray(), TaskExtrasExtensions.PropagateExceptions);
             TimeSpan initializationTime = initializationTimer.Elapsed;
             Console.WriteLine("Initialization time: {0} sec", initializationTime.TotalSeconds);
 

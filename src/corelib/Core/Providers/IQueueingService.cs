@@ -37,14 +37,14 @@
         #region Queues
 
         /// <summary>
-        /// Creates a queue.
+        /// Creates a queue, if it does not already exist.
         /// </summary>
         /// <param name="queueName">The queue name.</param>
-        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully, the <see cref="Task{TResult}.Result"/> property will contain <c>true</c> if the queue was created by the call, or <c>false</c> if the queue already existed.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="queueName"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="queueName"/> is empty.</exception>
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Create_Queue">Create Queue (OpenStack Marconi API v1 Blueprint)</seealso>
-        Task CreateQueueAsync(string queueName, CancellationToken cancellationToken);
+        Task<bool> CreateQueueAsync(string queueName, CancellationToken cancellationToken);
 
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#List_Queues">List Queues (OpenStack Marconi API v1 Blueprint)</seealso>
         Task<IEnumerable<CloudQueue>> ListQueuesAsync(string marker, int? limit, bool detailed, CancellationToken cancellationToken);
