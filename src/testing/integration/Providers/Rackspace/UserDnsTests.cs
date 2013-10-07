@@ -423,7 +423,7 @@
                     Console.WriteLine(await JsonConvert.SerializeObjectAsync(subdomain, Formatting.Indented));
                 }
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));

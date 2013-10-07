@@ -477,6 +477,12 @@
         }
 
         /// <inheritdoc/>
+        public Task UpdateDomainsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
         public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains?deleteSubdomains={deleteSubdomains}");
@@ -682,6 +688,12 @@
         }
 
         /// <inheritdoc/>
+        public Task UpdateRecordsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
         public Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordIds, DnsCompletionOption completionOption, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records");
@@ -838,6 +850,12 @@
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap()
                 .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task UpdatePtrRecordsAsync()
+        {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
@@ -1028,14 +1046,34 @@
             Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
                 task =>
                 {
+                    Console.WriteLine("{0} (Request) {1} {2}", DateTime.Now, task.Result.Method, task.Result.RequestUri);
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
             Func<Task<WebResponse>, string> readResult =
                 task =>
                 {
-                    using (StreamReader reader = new StreamReader(task.Result.GetResponseStream()))
+                    HttpWebResponse response;
+                    if (task.IsFaulted)
                     {
-                        return reader.ReadToEnd();
+                        WebException webException = task.Exception.Flatten().InnerException as WebException;
+                        if (webException == null)
+                            task.PropagateExceptions();
+
+                        response = webException.Response as HttpWebResponse;
+                        if (response == null)
+                            task.PropagateExceptions();
+                    }
+                    else
+                    {
+                        response = (HttpWebResponse)task.Result;
+                    }
+
+                    Console.WriteLine("{0} (Result) {1}", DateTime.Now, response.ResponseUri);
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string body = reader.ReadToEnd();
+                        task.PropagateExceptions();
+                        return body;
                     }
                 };
 
@@ -1054,19 +1092,34 @@
             Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
                 task =>
                 {
+                    Console.WriteLine("{0} (Request) {1} {2}", DateTime.Now, task.Result.Method, task.Result.RequestUri);
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
-            Func<Task<WebResponse>, HttpWebResponse> checkResult =
+            Func<Task<WebResponse>, Tuple<HttpWebResponse, string>> readResult =
                 task =>
                 {
-                    return (HttpWebResponse)task.Result;
-                };
-            Func<Task<HttpWebResponse>, Tuple<HttpWebResponse, string>> readResult =
-                task =>
-                {
-                    using (StreamReader reader = new StreamReader(task.Result.GetResponseStream()))
+                    HttpWebResponse response;
+                    if (task.IsFaulted)
                     {
-                        return Tuple.Create(task.Result, reader.ReadToEnd());
+                        WebException webException = task.Exception.Flatten().InnerException as WebException;
+                        if (webException == null)
+                            task.PropagateExceptions();
+
+                        response = webException.Response as HttpWebResponse;
+                        if (response == null)
+                            task.PropagateExceptions();
+                    }
+                    else
+                    {
+                        response = (HttpWebResponse)task.Result;
+                    }
+
+                    Console.WriteLine("{0} (Result) {1}", DateTime.Now, response.ResponseUri);
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string body = reader.ReadToEnd();
+                        task.PropagateExceptions();
+                        return Tuple.Create(response, body);
                     }
                 };
             if (parseResult == null)
@@ -1088,7 +1141,6 @@
                 task =>
                 {
                     return task.ContinueWith(requestResource).Unwrap()
-                        .ContinueWith(checkResult)
                         .ContinueWith(readResult)
                         .ContinueWith(parseResult).Unwrap();
                 };
