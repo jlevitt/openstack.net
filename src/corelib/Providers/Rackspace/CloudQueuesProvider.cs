@@ -91,7 +91,6 @@
                     return task.Result;
                 };
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
@@ -108,7 +107,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -143,7 +141,6 @@
             Func<Task<HttpWebRequest>, Task<bool>> requestResource =
                 GetResponseAsyncFunc(cancellationToken, parseResult);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -174,7 +171,6 @@
             Func<Task<ListCloudQueuesResponse>, IEnumerable<CloudQueue>> resultSelector =
                 task => (task.Result != null ? task.Result.Queues : null) ?? Enumerable.Empty<CloudQueue>();
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
@@ -225,7 +221,6 @@
                     return false;
                 };
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
@@ -252,7 +247,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -279,7 +273,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap();
@@ -317,7 +310,6 @@
             Func<Task<HttpWebRequest>, Task<T>> requestResource =
                 GetResponseAsyncFunc<T>(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -339,7 +331,6 @@
             Func<Task<HttpWebRequest>, Task<QueueStatistics>> requestResource =
                 GetResponseAsyncFunc<QueueStatistics>(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -378,7 +369,6 @@
             Func<Task<ListCloudQueueMessagesResponse>, IEnumerable<QueuedMessage>> resultSelector =
                 task => task.Result.Messages;
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
@@ -412,7 +402,6 @@
             Func<Task<HttpWebRequest>, Task<QueuedMessage>> requestResource =
                 GetResponseAsyncFunc<QueuedMessage>(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -445,7 +434,6 @@
             Func<Task<HttpWebRequest>, Task<IEnumerable<QueuedMessage>>> requestResource =
                 GetResponseAsyncFunc<IEnumerable<QueuedMessage>>(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -490,7 +478,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap();
@@ -535,7 +522,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap();
@@ -570,7 +556,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -603,7 +588,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -661,7 +645,6 @@
             Func<Task<Tuple<Uri, IEnumerable<QueuedMessage>>>, Claim> resultSelector =
                 task => new Claim(this, queueName, task.Result.Item1, timeToLive, TimeSpan.Zero, true, task.Result.Item2);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap()
@@ -709,7 +692,6 @@
             Func<Task<Tuple<Uri, TimeSpan, TimeSpan, IEnumerable<QueuedMessage>>>, Claim> resultSelector =
                 task => new Claim(this, queueName, task.Result.Item1, task.Result.Item2, task.Result.Item3, false, task.Result.Item4);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
@@ -744,7 +726,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap();
@@ -775,7 +756,6 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
-            // authenticate -> request resource -> check result -> parse result -> cache result -> return
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap();
@@ -928,11 +908,6 @@
                 {
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
-            //Func<Task<WebResponse>, HttpWebResponse> checkResult =
-            //    task =>
-            //    {
-            //        return (HttpWebResponse)task.Result;
-            //    };
             Func<Task<WebResponse>, string> readResult =
                 task =>
                 {
@@ -946,7 +921,6 @@
                 task =>
                 {
                     return task.ContinueWith(requestResource).Unwrap()
-                        //.ContinueWith(checkResult)
                         .ContinueWith(readResult);
                 };
 
@@ -960,17 +934,12 @@
                 {
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
-            Func<Task<WebResponse>, HttpWebResponse> checkResult =
-                task =>
-                {
-                    return (HttpWebResponse)task.Result;
-                };
-            Func<Task<HttpWebResponse>, Tuple<HttpWebResponse, string>> readResult =
+            Func<Task<WebResponse>, Tuple<HttpWebResponse, string>> readResult =
                 task =>
                 {
                     using (StreamReader reader = new StreamReader(task.Result.GetResponseStream()))
                     {
-                        return Tuple.Create(task.Result, reader.ReadToEnd());
+                        return Tuple.Create((HttpWebResponse)task.Result, reader.ReadToEnd());
                     }
                 };
             if (parseResult == null)
@@ -990,7 +959,6 @@
                 task =>
                 {
                     return task.ContinueWith(requestResource).Unwrap()
-                        .ContinueWith(checkResult)
                         .ContinueWith(readResult)
                         .ContinueWith(parseResult).Unwrap();
                 };
