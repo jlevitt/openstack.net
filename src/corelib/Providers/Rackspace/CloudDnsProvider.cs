@@ -225,7 +225,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<DnsDomain>> ListDomainsAsync(string domainName, int? offset, int? limit, CancellationToken cancellationToken)
+        public Task<Tuple<IEnumerable<DnsDomain>, int?>> ListDomainsAsync(string domainName, int? offset, int? limit, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains/?name={name}&offset={offset}&limit={limit}");
             var parameters = new Dictionary<string, string>();
@@ -242,7 +242,7 @@
             Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
                 GetResponseAsyncFunc<JObject>(cancellationToken);
 
-            Func<Task<JObject>, IEnumerable<DnsDomain>> resultSelector =
+            Func<Task<JObject>, Tuple<IEnumerable<DnsDomain>, int?>> resultSelector =
                 task =>
                 {
                     JObject result = task.Result;
@@ -253,7 +253,12 @@
                     if (domains == null)
                         return null;
 
-                    return domains.ToObject<DnsDomain[]>();
+                    int? totalEntries = null;
+                    JToken totalEntriesToken = result["totalEntries"];
+                    if (totalEntriesToken != null)
+                        totalEntries = totalEntriesToken.ToObject<int>();
+
+                    return Tuple.Create(domains.ToObject<IEnumerable<DnsDomain>>(), totalEntries);
                 };
 
             return AuthenticateServiceAsync(cancellationToken)
@@ -515,7 +520,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<DnsSubdomain>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken)
+        public Task<Tuple<IEnumerable<DnsSubdomain>, int?>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/subdomains?offset={offset}&limit={limit}");
             var parameters = new Dictionary<string, string>
@@ -533,7 +538,7 @@
             Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
                 GetResponseAsyncFunc<JObject>(cancellationToken);
 
-            Func<Task<JObject>, IEnumerable<DnsSubdomain>> resultSelector =
+            Func<Task<JObject>, Tuple<IEnumerable<DnsSubdomain>, int?>> resultSelector =
                 task =>
                 {
                     JObject result = task.Result;
@@ -544,7 +549,12 @@
                     if (domains == null)
                         return null;
 
-                    return domains.ToObject<DnsSubdomain[]>();
+                    int? totalEntries = null;
+                    JToken totalEntriesToken = result["totalEntries"];
+                    if (totalEntriesToken != null)
+                        totalEntries = totalEntriesToken.ToObject<int>();
+
+                    return Tuple.Create(domains.ToObject<IEnumerable<DnsSubdomain>>(), totalEntries);
                 };
 
             return AuthenticateServiceAsync(cancellationToken)

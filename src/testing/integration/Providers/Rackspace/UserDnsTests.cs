@@ -138,7 +138,7 @@
             IDnsService provider = CreateProvider();
             using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(30))))
             {
-                IEnumerable<DnsDomain> domains = ListAllDomains(provider, null, null, cancellationTokenSource.Token);
+                DnsDomain[] domains = ListAllDomains(provider, null, null, cancellationTokenSource.Token).ToArray();
                 Assert.IsNotNull(domains);
 
                 if (!domains.Any())
@@ -192,7 +192,7 @@
                     createdDomains = details.Response.Domains;
                 }
 
-                IEnumerable<DnsDomain> domains = await provider.ListDomainsAsync(domainName, null, null, cancellationTokenSource.Token);
+                DnsDomain[] domains = ListAllDomains(provider, domainName, null, cancellationTokenSource.Token).ToArray();
                 Assert.IsNotNull(domains);
 
                 if (!domains.Any())
@@ -452,7 +452,7 @@
         /// Each of the returned tasks is executed asynchronously but sequentially. This
         /// method will not send concurrent requests to the DNS service.
         /// <para>
-        /// Due to the way the list end is detected, the final task will return an empty
+        /// Due to the way the list end is detected, the final task may return an empty
         /// collection of <see cref="DnsDomain"/> instances.
         /// </para>
         /// </remarks>
@@ -471,12 +471,14 @@
 
             int index = 0;
             int previousIndex;
+            int? totalEntries = null;
 
             do
             {
                 previousIndex = index;
-                Task<IEnumerable<DnsDomain>> domains = provider.ListDomainsAsync(domainName, index, limit, cancellationToken);
-                foreach (DnsDomain domain in domains.Result)
+                Task<Tuple<IEnumerable<DnsDomain>, int?>> domains = provider.ListDomainsAsync(domainName, index, limit, cancellationToken);
+                totalEntries = domains.Result.Item2;
+                foreach (DnsDomain domain in domains.Result.Item1)
                 {
                     index++;
                     yield return domain;
@@ -488,7 +490,7 @@
                     // or if the limit is not specified
                     limit = index;
                 }
-            } while (index > previousIndex);
+            } while (index > previousIndex && (totalEntries == null || index < totalEntries));
         }
 
         /// <summary>
@@ -500,7 +502,7 @@
         /// Each of the returned tasks is executed asynchronously but sequentially. This
         /// method will not send concurrent requests to the DNS service.
         /// <para>
-        /// Due to the way the list end is detected, the final task will return an empty
+        /// Due to the way the list end is detected, the final task may return an empty
         /// collection of <see cref="DnsSubdomain"/> instances.
         /// </para>
         /// </remarks>
@@ -519,12 +521,14 @@
 
             int index = 0;
             int previousIndex;
+            int? totalEntries = null;
 
             do
             {
                 previousIndex = index;
-                Task<IEnumerable<DnsSubdomain>> subdomains = provider.ListSubdomainsAsync(domainId, index, limit, cancellationToken);
-                foreach (DnsSubdomain subdomain in subdomains.Result)
+                Task<Tuple<IEnumerable<DnsSubdomain>, int?>> subdomains = provider.ListSubdomainsAsync(domainId, index, limit, cancellationToken);
+                totalEntries = subdomains.Result.Item2;
+                foreach (DnsSubdomain subdomain in subdomains.Result.Item1)
                 {
                     index++;
                     yield return subdomain;
@@ -536,7 +540,7 @@
                     // or if the limit is not specified
                     limit = index;
                 }
-            } while (index > previousIndex);
+            } while (index > previousIndex && (totalEntries == null || index < totalEntries));
         }
 
         private TimeSpan TestTimeout(TimeSpan timeout)

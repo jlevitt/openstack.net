@@ -32,7 +32,7 @@
 
         #region Domains
 
-        Task<IEnumerable<DnsDomain>> ListDomainsAsync(string domainName, int? offset, int? limit, CancellationToken cancellationToken);
+        Task<Tuple<IEnumerable<DnsDomain>, int?>> ListDomainsAsync(string domainName, int? offset, int? limit, CancellationToken cancellationToken);
 
         Task<DnsDomain> ListDomainDetailsAsync(string domainId, bool showRecords, bool showSubdomains, CancellationToken cancellationToken);
 
@@ -52,7 +52,7 @@
 
         #region Subdomains
 
-        Task<IEnumerable<DnsSubdomain>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken);
+        Task<Tuple<IEnumerable<DnsSubdomain>, int?>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken);
 
         #endregion
     }
