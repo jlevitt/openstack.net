@@ -724,6 +724,160 @@
                 .ContinueWith(resultSelector);
         }
 
+        /// <inheritdoc/>
+        public Task<Tuple<IEnumerable<DnsRecord>, int?>> ListPtrRecordsAsync(string serviceName, Uri deviceResourceUri, int? offset, int? limit, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/rdns/{serviceName}?href={deviceResourceUri}&offset={offset}&limit={limit}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "serviceName", serviceName },
+                    { "deviceResourceUri", deviceResourceUri.AbsoluteUri },
+                };
+            if (offset != null)
+                parameters.Add("offset", offset.ToString());
+            if (limit != null)
+                parameters.Add("limit", limit.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, Tuple<IEnumerable<DnsRecord>, int?>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    JToken records = result["records"];
+                    if (records == null)
+                        return null;
+
+                    int? totalEntries = null;
+                    JToken totalEntriesToken = result["totalEntries"];
+                    if (totalEntriesToken != null)
+                        totalEntries = totalEntriesToken.ToObject<int>();
+
+                    return Tuple.Create(records.ToObject<IEnumerable<DnsRecord>>(), totalEntries);
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsRecord> ListPtrRecordDetailsAsync(string serviceName, Uri deviceResourceUri, string recordId, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/rdns/{serviceName}/{recordId}?href={deviceResourceUri}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "serviceName", serviceName },
+                    { "deviceResourceUri", deviceResourceUri.AbsoluteUri },
+                    { "recordId", recordId },
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsRecord> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsRecord>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<DnsDomain.RecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/rdns");
+            var parameters = new Dictionary<string, string>();
+
+            JObject request = new JObject(
+                new JProperty("link", new JObject(
+                    new JProperty("href", new JValue(deviceResourceUri.AbsoluteUri)),
+                    new JProperty("rel", new JValue(serviceName)),
+                    new JProperty("content", new JValue(string.Empty)))),
+                new JProperty("records", JArray.FromObject(recordConfigurations)));
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, request);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<DnsDomain.RecordsList>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob> RemovePtrRecordsAsync(string serviceName, Uri deviceResourceUri, IPAddress ipAddress, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/rdns/{serviceName}?href={deviceResourceUri}&ip={ipAddress}");
+            var parameters = new Dictionary<string, string>()
+                {
+                    { "serviceName", serviceName },
+                    { "deviceResourceUri", deviceResourceUri.AbsoluteUri },
+                };
+            if (ipAddress != null)
+                parameters.Add("ipAddress", ipAddress.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob job = task.Result.ToObject<DnsJob>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
         #endregion
 
         protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)
