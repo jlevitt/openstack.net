@@ -7,7 +7,7 @@
     public class DnsRecord
     {
         [JsonProperty("ttl")]
-        private int _ttl;
+        private int? _timeToLive;
 
         [JsonProperty("name")]
         private string _name;
@@ -32,5 +32,80 @@
 
         [JsonProperty("updated")]
         private DateTimeOffset? _updated;
+
+        public string Id
+        {
+            get
+            {
+                return _id;
+            }
+        }
+
+        public DnsRecordType Type
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+        }
+
+        public string Data
+        {
+            get
+            {
+                return _data;
+            }
+        }
+
+        public TimeSpan? TimeToLive
+        {
+            get
+            {
+                if (_timeToLive == null)
+                    return null;
+
+                return TimeSpan.FromSeconds(_timeToLive.Value);
+            }
+        }
+
+        public DateTimeOffset? Created
+        {
+            get
+            {
+                return _created;
+            }
+        }
+
+        public DateTimeOffset? Updated
+        {
+            get
+            {
+                return _updated;
+            }
+        }
+
+        public int? Priority
+        {
+            get
+            {
+                return _priority;
+            }
+        }
+
+        public string Comment
+        {
+            get
+            {
+                return _comment;
+            }
+        }
     }
 }

@@ -563,6 +563,167 @@
                 .ContinueWith(resultSelector);
         }
 
+        /// <inheritdoc/>
+        public Task<Tuple<IEnumerable<DnsRecord>, int?>> ListRecordsAsync(string domainId, string recordType, string recordName, string recordData, int? offset, int? limit, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/records?type={recordType}&name={recordName}&data={recordData}&offset={offset}&limit={limit}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "domainId", domainId }
+                };
+            if (recordType != null)
+                parameters.Add("recordType", recordType);
+            if (recordName != null)
+                parameters.Add("recordName", recordName);
+            if (recordData != null)
+                parameters.Add("recordData", recordData);
+            if (offset != null)
+                parameters.Add("offset", offset.ToString());
+            if (limit != null)
+                parameters.Add("limit", limit.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, Tuple<IEnumerable<DnsRecord>, int?>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    JToken records = result["records"];
+                    if (records == null)
+                        return null;
+
+                    int? totalEntries = null;
+                    JToken totalEntriesToken = result["totalEntries"];
+                    if (totalEntriesToken != null)
+                        totalEntries = totalEntriesToken.ToObject<int>();
+
+                    return Tuple.Create(records.ToObject<IEnumerable<DnsRecord>>(), totalEntries);
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsRecord> ListRecordDetailsAsync(string domainId, string recordId, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/records/{recordId}");
+            var parameters = new Dictionary<string, string>
+                {
+                    { "domainId", domainId },
+                    { "recordId", recordId }
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsRecord> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    return result.ToObject<DnsRecord>();
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/records");
+            var parameters = new Dictionary<string, string>()
+                {
+                    { "domainId", domainId }
+                };
+
+            JObject request = new JObject(new JProperty("records", JArray.FromObject(recordConfigurations)));
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, request);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob<DnsDomain.RecordsList>> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordIds, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/domains/{domainId}/records");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "domainId", domainId },
+            };
+
+            Func<Uri, Uri> transform =
+                uri =>
+                {
+                    UriBuilder builder = new UriBuilder(uri);
+                    builder.Query = builder.Query.TrimStart('?') + string.Concat(recordIds.Select(recordId => "&id=" + recordId));
+                    return builder.Uri;
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, transform);
+
+            Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
+                GetResponseAsyncFunc<JObject>(cancellationToken);
+
+            Func<Task<JObject>, DnsJob> resultSelector =
+                task =>
+                {
+                    JObject result = task.Result;
+                    if (result == null)
+                        return null;
+
+                    DnsJob job = task.Result.ToObject<DnsJob>();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+
+                    return job;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
         #endregion
 
         protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)

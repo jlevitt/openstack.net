@@ -55,5 +55,17 @@
         Task<Tuple<IEnumerable<DnsSubdomain>, int?>> ListSubdomainsAsync(string domainId, int? offset, int? limit, CancellationToken cancellationToken);
 
         #endregion
+
+        #region Records
+
+        Task<Tuple<IEnumerable<DnsRecord>, int?>> ListRecordsAsync(string domainId, string recordType, string recordName, string recordData, int? offset, int? limit, CancellationToken cancellationToken);
+
+        Task<DnsRecord> ListRecordDetailsAsync(string domainId, string recordId, CancellationToken cancellationToken);
+
+        Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken);
+
+        Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordId, DnsCompletionOption completionOption, CancellationToken cancellationToken);
+
+        #endregion
     }
 }
