@@ -305,8 +305,8 @@
 
             double clientRate = clientTotal / testDuration.TotalSeconds;
             double serverRate = serverTotal / testDuration.TotalSeconds;
-            Console.WriteLine("Total client messages: {0} ({1} messages/sec)", clientTotal, clientRate);
-            Console.WriteLine("Total server messages: {0} ({1} messages/sec)", serverTotal, serverRate);
+            Console.WriteLine("Total client messages: {0} ({1} messages/sec, {2} messages/sec/client)", clientTotal, clientRate, clientRate / clientCount);
+            Console.WriteLine("Total server messages: {0} ({1} messages/sec, {2} messages/sec/server)", serverTotal, serverRate, serverRate / serverCount);
 
             Console.WriteLine("Deleting request queue...");
             await provider.DeleteQueueAsync(requestQueueName, testCancellationTokenSource.Token);
