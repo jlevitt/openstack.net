@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -257,42 +258,79 @@
         [TestCategory(TestCategories.Queues)]
         public async Task TestQueueMessages()
         {
+            int clientCount = 3;
+            int serverCount = 2;
+
             string requestQueueName = CreateRandomQueueName();
+            string[] responseQueueNames = Enumerable.Range(0, clientCount).Select(i => CreateRandomQueueName()).ToArray();
 
             IQueueingService provider = CreateProvider();
             CancellationTokenSource testCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(300));
 
+            Stopwatch initializationTimer = Stopwatch.StartNew();
+            Console.WriteLine("Creating request queue...");
             await provider.CreateQueueAsync(requestQueueName, testCancellationTokenSource.Token);
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            Console.WriteLine("Creating {0} response queues...", responseQueueNames.Length);
+            await Task.Factory.ContinueWhenAll(responseQueueNames.Select(queueName => provider.CreateQueueAsync(queueName, testCancellationTokenSource.Token)).ToArray(), TaskExtrasExtensions.PropagateExceptions);
+            TimeSpan initializationTime = initializationTimer.Elapsed;
+            Console.WriteLine("Initialization time: {0} sec", initializationTime.TotalSeconds);
 
-            int clientCount = 20;
-            int serverCount = 10;
+            TimeSpan testDuration = TimeSpan.FromSeconds(10);
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(testDuration);
+
+            Stopwatch processingTimer = Stopwatch.StartNew();
+
             List<Task<int>> clientTasks = new List<Task<int>>();
             List<Task<int>> serverTasks = new List<Task<int>>();
             for (int i = 0; i < clientCount; i++)
-                clientTasks.Add(PublishMessages(requestQueueName, CreateRandomQueueName(), cancellationTokenSource.Token));
+                clientTasks.Add(PublishMessages(requestQueueName, responseQueueNames[i], cancellationTokenSource.Token));
             for (int i = 0; i < serverCount; i++)
                 serverTasks.Add(SubscribeMessages(requestQueueName, cancellationTokenSource.Token));
+
+            // wait for all client and server tasks to finish processing
             await Task.Factory.ContinueWhenAll(clientTasks.Concat(serverTasks).Cast<Task>().ToArray(), TaskExtrasExtensions.PropagateExceptions);
 
+            int clientTotal = 0;
+            int serverTotal = 0;
             for (int i = 0; i < clientTasks.Count; i++)
+            {
                 Console.WriteLine("Client {0}: {1} messages", i, clientTasks[i].Result);
+                clientTotal += clientTasks[i].Result;
+            }
             for (int i = 0; i < serverTasks.Count; i++)
+            {
                 Console.WriteLine("Server {0}: {1} messages", i, serverTasks[i].Result);
+                serverTotal += serverTasks[i].Result;
+            }
 
+            double clientRate = clientTotal / testDuration.TotalSeconds;
+            double serverRate = serverTotal / testDuration.TotalSeconds;
+            Console.WriteLine("Total client messages: {0} ({1} messages/sec)", clientTotal, clientRate);
+            Console.WriteLine("Total server messages: {0} ({1} messages/sec)", serverTotal, serverRate);
+
+            Console.WriteLine("Deleting request queue...");
             await provider.DeleteQueueAsync(requestQueueName, testCancellationTokenSource.Token);
+            Console.WriteLine("Deleting {0} response queues...", responseQueueNames.Length);
+            await Task.Factory.ContinueWhenAll(responseQueueNames.Select(queueName => provider.DeleteQueueAsync(queueName, testCancellationTokenSource.Token)).ToArray(), TaskExtrasExtensions.PropagateExceptions);
+
+            if (clientTotal == 0)
+                Assert.Inconclusive("No messages were fully processed by the test.");
         }
 
         private async Task<int> PublishMessages(string requestQueueName, string replyQueueName, CancellationToken token)
         {
             IQueueingService queueingService = CreateProvider();
-            await queueingService.CreateQueueAsync(replyQueueName, token);
             int processedMessages = 0;
             try
             {
+                Random random = new Random();
+
                 while (true)
                 {
-                    Message<CalculatorOperation> message = new Message<CalculatorOperation>(TimeSpan.FromMinutes(5), new CalculatorOperation(replyQueueName, "+", 1, 3));
+                    long x = random.Next();
+                    long y = random.Next();
+
+                    Message<CalculatorOperation> message = new Message<CalculatorOperation>(TimeSpan.FromMinutes(5), new CalculatorOperation(replyQueueName, "+", x, y));
                     await queueingService.PostMessagesAsync(requestQueueName, token, message);
 
                     bool handled = false;
@@ -308,6 +346,7 @@
                                 {
                                     // this is the reply to this thread's operation
                                     Assert.AreEqual(message.Body._operand1 + message.Body._operand2, result._result);
+                                    Assert.AreEqual(x + y, result._result);
                                     await queueingService.DeleteMessageAsync(replyQueueName, queuedMessage.Id, claim, token);
                                     processedMessages++;
                                     handled = true;
@@ -315,18 +354,16 @@
                                 else if (token.IsCancellationRequested)
                                 {
                                     // shutdown trigger
-                                    goto shutdownClient;
+                                    return processedMessages;
                                 }
                             }
 
+                            // start the dispose process using DisposeAsync so the CancellationToken is honored
                             Task disposeTask = claim.DisposeAsync(token);
                         }
 
                         if (handled)
                             break;
-
-                        //// delay before proceeding
-                        //await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                 }
             }
@@ -347,21 +384,20 @@
 
                         return false;
                     });
+
+                return processedMessages;
             }
             catch (TaskCanceledException)
             {
+                return processedMessages;
             }
             catch (WebException ex)
             {
                 if (ex.Status != WebExceptionStatus.RequestCanceled)
                     throw;
+
+                return processedMessages;
             }
-
-        shutdownClient:
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            await queueingService.DeleteQueueAsync(replyQueueName, cancellationTokenSource.Token);
-
-            return processedMessages;
         }
 
         private async Task<int> SubscribeMessages(string requestQueueName, CancellationToken token)
@@ -414,6 +450,7 @@
                         if (deletionTasks.Count > 0)
                             await Task.Factory.ContinueWhenAll(deletionTasks.ToArray(), TaskExtrasExtensions.PropagateExceptions);
 
+                        // start the dispose process using DisposeAsync so the CancellationToken is honored
                         Task disposeTask = claim.DisposeAsync(token);
                     }
 
@@ -421,9 +458,6 @@
                     {
                         return processedMessages;
                     }
-
-                    //// delay before proceeding
-                    //await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
             catch (AggregateException ex)
