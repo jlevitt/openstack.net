@@ -357,7 +357,7 @@
 
                     DnsJob<ExportedDomain> job = task.Result.ToObject<DnsJob<ExportedDomain>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<ExportedDomain>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<ExportedDomain>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -389,7 +389,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -429,7 +429,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -465,7 +465,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -508,7 +508,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -670,7 +670,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -713,7 +713,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -829,7 +829,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -867,7 +867,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
 
                     return job;
                 };
@@ -880,7 +880,7 @@
 
         #endregion
 
-        protected Task<DnsJob> WaitForJobAsync(string jobId, CancellationToken cancellationToken)
+        protected Task<DnsJob> WaitForJobAsync(string jobId, bool showDetails, CancellationToken cancellationToken)
         {
             Func<DnsJob> func =
                 () =>
@@ -888,7 +888,7 @@
                     while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        DnsJob job = GetJobStatus(jobId, false, cancellationToken).Result;
+                        DnsJob job = GetJobStatus(jobId, showDetails, cancellationToken).Result;
                         if (job == null || job.Id != jobId)
                             throw new InvalidOperationException("Could not obtain status for job.");
 
@@ -902,7 +902,7 @@
             return Task.Factory.StartNew(func);
         }
 
-        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, CancellationToken cancellationToken)
+        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken)
         {
             Func<DnsJob<TResult>> func =
                 () =>
@@ -910,7 +910,7 @@
                     while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        DnsJob<TResult> job = GetJobStatus<TResult>(jobId, false, cancellationToken).Result;
+                        DnsJob<TResult> job = GetJobStatus<TResult>(jobId, showDetails, cancellationToken).Result;
                         if (job == null || job.Id != jobId)
                             throw new InvalidOperationException("Could not obtain status for job.");
 
