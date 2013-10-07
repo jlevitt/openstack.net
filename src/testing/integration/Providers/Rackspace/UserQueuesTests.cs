@@ -411,7 +411,7 @@
                     // process request messages
                     using (Claim claim = await queueingService.ClaimMessageAsync(requestQueueName, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1), token))
                     {
-                        List<Task> deletionTasks = new List<Task>();
+                        List<QueuedMessage> messagesToDelete = new List<QueuedMessage>();
 
                         foreach (QueuedMessage queuedMessage in claim.Messages)
                         {
@@ -439,7 +439,7 @@
                                 throw new InvalidOperationException();
                             }
 
-                            deletionTasks.Add(queueingService.DeleteMessageAsync(requestQueueName, queuedMessage.Id, claim, token));
+                            messagesToDelete.Add(queuedMessage);
 
                             // Assigning result to a local suppresses a warning about calling an asynchronous operation.
                             // In this case, we do not need to wait for the task to finish.
@@ -447,8 +447,8 @@
                             processedMessages++;
                         }
 
-                        if (deletionTasks.Count > 0)
-                            await Task.Factory.ContinueWhenAll(deletionTasks.ToArray(), TaskExtrasExtensions.PropagateExceptions);
+                        if (messagesToDelete.Count > 0)
+                            await queueingService.DeleteMessagesAsync(requestQueueName, messagesToDelete.Select(i => i.Id), token);
 
                         // start the dispose process using DisposeAsync so the CancellationToken is honored
                         Task disposeTask = claim.DisposeAsync(token);

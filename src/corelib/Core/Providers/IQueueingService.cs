@@ -109,7 +109,7 @@
         Task DeleteMessageAsync(string queueName, string messageId, Claim claim, CancellationToken cancellationToken);
 
         /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Delete_a_Set_of_Messages_by_ID">Delete a Set of Messages by ID (OpenStack Marconi API v1 Blueprint)</seealso>
-        Task DeleteMessagesAsync(string queueName, IEnumerable<string> messageIds, Claim claim, CancellationToken cancellationToken);
+        Task DeleteMessagesAsync(string queueName, IEnumerable<string> messageIds, CancellationToken cancellationToken);
 
         #endregion Messages
 
