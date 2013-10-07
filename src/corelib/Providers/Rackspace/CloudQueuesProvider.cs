@@ -758,7 +758,7 @@
                     request.Method = method.ToString().ToUpperInvariant();
                     request.Accept = JsonRequestSettings.JsonContentType;
                     request.Headers["X-Auth-Token"] = task.Result.Item1.Id;
-                    request.Headers["Client-Id"] = _clientId.ToString("B");
+                    request.Headers["Client-Id"] = _clientId.ToString("D");
                     request.UserAgent = UserAgentGenerator.UserAgent;
                     request.Timeout = (int)TimeSpan.FromSeconds(14400).TotalMilliseconds;
                     if (ConnectionLimit.HasValue)
@@ -778,7 +778,7 @@
                     request.Method = method.ToString().ToUpperInvariant();
                     request.Accept = JsonRequestSettings.JsonContentType;
                     request.Headers["X-Auth-Token"] = task.Result.Item1.Id;
-                    request.Headers["Client-Id"] = _clientId.ToString("B");
+                    request.Headers["Client-Id"] = _clientId.ToString("D");
                     request.UserAgent = UserAgentGenerator.UserAgent;
                     request.Timeout = (int)TimeSpan.FromSeconds(14400).TotalMilliseconds;
                     if (ConnectionLimit.HasValue)
