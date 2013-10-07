@@ -535,7 +535,7 @@
         }
 
         /// <inheritdoc/>
-        public Task DeleteMessagesAsync(string queueName, IEnumerable<string> messageIds, CancellationToken cancellationToken)
+        public Task DeleteMessagesAsync(string queueName, IEnumerable<string> messageIds, Claim claim, CancellationToken cancellationToken)
         {
             if (queueName == null)
                 throw new ArgumentNullException("queueName");
@@ -544,7 +544,7 @@
             if (string.IsNullOrEmpty(queueName))
                 throw new ArgumentException("queueName cannot be empty");
 
-            UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages?ids={ids}");
+            UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/messages?ids={ids}&claim_id={claim_id}");
 
             var parameters =
                 new Dictionary<string, string>()
@@ -552,6 +552,8 @@
                     { "queue_name", queueName },
                     { "ids", string.Join(",", messageIds.ToArray()) },
                 };
+            if (claim != null)
+                parameters["claim_id"] = claim.Id;
 
             Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
                 PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
