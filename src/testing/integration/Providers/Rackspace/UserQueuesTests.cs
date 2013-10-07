@@ -565,6 +565,8 @@
             QueueStatistics statistics;
             using (Claim claim = await provider.ClaimMessageAsync(queueName, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(1), cancellationTokenSource.Token))
             {
+                Assert.AreEqual(TimeSpan.FromMinutes(5), claim.TimeToLive);
+
                 Assert.IsNotNull(claim.Messages);
                 Assert.AreEqual(1, claim.Messages.Count);
 
@@ -573,6 +575,14 @@
 
                 QueuedMessage message = await provider.GetMessageAsync(queueName, claim.Messages[0].Id, cancellationTokenSource.Token);
                 Assert.IsNotNull(message);
+
+                TimeSpan age = claim.Age;
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await claim.RefreshAsync(cancellationTokenSource.Token);
+                Assert.IsTrue(claim.Age >= age + TimeSpan.FromSeconds(2));
+
+                await claim.RenewAsync(TimeSpan.FromMinutes(10), cancellationTokenSource.Token);
+                Assert.AreEqual(TimeSpan.FromMinutes(10), claim.TimeToLive);
             }
 
             statistics = await provider.GetQueueStatisticsAsync(queueName, cancellationTokenSource.Token);

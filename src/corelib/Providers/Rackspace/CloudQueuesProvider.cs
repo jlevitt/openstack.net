@@ -671,13 +671,83 @@
         /// <inheritdoc/>
         public Task<Claim> QueryClaimAsync(string queueName, Claim claim, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (queueName == null)
+                throw new ArgumentNullException("queueName");
+            if (claim == null)
+                throw new ArgumentNullException("claim");
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentException("queueName cannot be empty");
+
+            UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/claims/{claim_id}");
+
+            var parameters =
+                new Dictionary<string, string>()
+                {
+                    { "queue_name", queueName },
+                    { "claim_id", claim.Id }
+                };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<Tuple<HttpWebResponse, string>>, Task<Tuple<Uri, TimeSpan, TimeSpan, IEnumerable<QueuedMessage>>>> parseResult =
+                task =>
+                {
+                    // this response uses ContentLocation instead of Location
+                    string location = task.Result.Item1.Headers[HttpResponseHeader.ContentLocation];
+                    Uri locationUri = location != null ? new Uri(_baseUri, location) : null;
+
+                    JObject result = JsonConvert.DeserializeObject<JObject>(task.Result.Item2);
+                    TimeSpan age = TimeSpan.FromSeconds((int)result["age"]);
+                    TimeSpan ttl = TimeSpan.FromSeconds((int)result["ttl"]);
+                    IEnumerable<QueuedMessage> messages = result["messages"].ToObject<IEnumerable<QueuedMessage>>();
+                    return InternalTaskExtensions.CompletedTask(Tuple.Create(locationUri, ttl, age, messages));
+                };
+            Func<Task<HttpWebRequest>, Task<Tuple<Uri, TimeSpan, TimeSpan, IEnumerable<QueuedMessage>>>> requestResource =
+                GetResponseAsyncFunc(cancellationToken, parseResult);
+
+            Func<Task<Tuple<Uri, TimeSpan, TimeSpan, IEnumerable<QueuedMessage>>>, Claim> resultSelector =
+                task => new Claim(this, queueName, task.Result.Item1, task.Result.Item2, task.Result.Item3, false, task.Result.Item4);
+
+            // authenticate -> request resource -> check result -> parse result -> cache result -> return
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task UpdateClaimAsync(string queueName, Claim claim, TimeSpan timeToLive, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (queueName == null)
+                throw new ArgumentNullException("queueName");
+            if (claim == null)
+                throw new ArgumentNullException("claim");
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentException("queueName cannot be empty");
+            if (timeToLive <= TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException("timeToLive");
+
+            UriTemplate template = new UriTemplate("/v1/queues/{queue_name}/claims/{claim_id}");
+
+            var parameters =
+                new Dictionary<string, string>()
+                {
+                    { "queue_name", queueName },
+                    { "claim_id", claim.Id }
+                };
+
+            JObject request = new JObject(new JProperty("ttl", new JValue((int)timeToLive.TotalSeconds)));
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PATCH, template, parameters, request);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            // authenticate -> request resource -> check result -> parse result -> cache result -> return
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>
