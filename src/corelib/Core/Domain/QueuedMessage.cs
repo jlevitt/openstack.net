@@ -56,10 +56,18 @@
         {
             get
             {
-                if (Href == null || Href.Segments.Length == 0)
+                if (Href == null)
                     return null;
 
-                return Href.Segments.Last();
+                Uri href = Href;
+                // make sure we have an absolute URI, or Segments will throw an InvalidOperationException
+                if (!href.IsAbsoluteUri)
+                    href = new Uri(new Uri("http://example.com"), href);
+
+                if (href.Segments.Length == 0)
+                    return null;
+
+                return href.Segments.Last();
             }
         }
 
