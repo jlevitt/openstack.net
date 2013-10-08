@@ -11,8 +11,6 @@
     /// </summary>
     internal static class InternalTaskExtensions
     {
-        private static readonly Task CompletedTaskInstance;
-
         /// <summary>
         /// Gets a completed <see cref="Task"/>.
         /// </summary>
