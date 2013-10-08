@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using net.openstack.Core.Domain;
 using net.openstack.Core.Providers;
 
@@ -13,8 +12,14 @@ namespace net.openstack.Core.Caching
     /// </summary>
     public class UserAccessCache : ICache<UserAccess>
     {
-        private static readonly Lazy<UserAccessCache> _instance = new Lazy<UserAccessCache>(CreateInstance, true);
+        /// <summary>
+        /// This is the backing field for the <see cref="Instance"/> property.
+        /// </summary>
+        private static readonly UserAccessCache _instance = new UserAccessCache();
 
+        /// <summary>
+        /// The underlying concurrent dictionary mapping canonical credentials to authentication tokens.
+        /// </summary>
         private readonly ConcurrentDictionary<string, UserAccess> _tokenCache = new ConcurrentDictionary<string, UserAccess>();
 
         /// <summary>
@@ -103,18 +108,12 @@ namespace net.openstack.Core.Caching
         /// <summary>
         /// Gets a default instance of <see cref="UserAccessCache"/>.
         /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public static UserAccessCache Instance
         {
             get
             {
-                return _instance.Value;
+                return _instance;
             }
-        }
-
-        private static UserAccessCache CreateInstance()
-        {
-            return new UserAccessCache();
         }
 
         private static bool IsValid(UserAccess userAccess)
