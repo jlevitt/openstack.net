@@ -9,6 +9,7 @@
     /// Provides extension methods for asynchronous operations on
     /// <see cref="WebRequest"/> objects.
     /// </summary>
+    /// <preliminary/>
     public static class WebRequestExtensions
     {
         /// <summary>

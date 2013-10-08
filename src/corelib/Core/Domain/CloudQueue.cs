@@ -9,6 +9,7 @@
     /// Represents a named queue in the <see cref="IQueueingService"/>.
     /// </summary>
     /// <seealso cref="IQueueingService"/>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class CloudQueue
     {

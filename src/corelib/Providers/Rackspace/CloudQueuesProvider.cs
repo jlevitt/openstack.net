@@ -26,6 +26,7 @@
     /// </summary>
     /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1">OpenStack Marconi API v1 Blueprint</seealso>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     public class CloudQueuesProvider : ProviderBase<IQueueingService>, IQueueingService
     {
         /// <summary>

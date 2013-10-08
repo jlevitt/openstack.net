@@ -10,6 +10,7 @@
     /// <summary>
     /// Provides extension methods to allow synchronous calls to the methods in <see cref="Claim"/>.
     /// </summary>
+    /// <preliminary/>
     public static class ClaimExtensions
     {
         /// <summary>

@@ -36,6 +36,7 @@
     /// resources. A future draft will explain how to define new hints.</para>
     /// </remarks>
     /// <seealso href="http://tools.ietf.org/html/draft-nottingham-json-home-03#section-4">Resource Hints (Home Documents for HTTP APIs - draft-nottingham-json-home-03)</seealso>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class ResourceHints
     {

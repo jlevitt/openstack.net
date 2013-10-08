@@ -7,6 +7,7 @@
     /// <summary>
     /// Represents a queue message with a dynamic <see cref="JObject"/> body.
     /// </summary>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class Message : Message<JObject>
     {

@@ -14,6 +14,7 @@
     /// <summary>
     /// Provides extension methods to allow synchronous calls to the methods in <see cref="IQueueingService"/>.
     /// </summary>
+    /// <preliminary/>
     public static class QueueingServiceExtensions
     {
         #region Base endpoints

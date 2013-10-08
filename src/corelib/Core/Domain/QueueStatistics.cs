@@ -7,6 +7,7 @@
     /// Get Queue Statistics API call.
     /// </summary>
     /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1#Get_Queue_Stats">Get Queue Statistics (Marconi API v1 Blueprint)</seealso>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class QueueStatistics
     {

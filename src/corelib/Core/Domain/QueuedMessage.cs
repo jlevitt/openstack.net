@@ -9,6 +9,7 @@
     /// <summary>
     /// Represents a message which is queued in the <see cref="IQueueingService"/>.
     /// </summary>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class QueuedMessage
     {

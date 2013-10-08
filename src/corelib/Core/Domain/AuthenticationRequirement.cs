@@ -9,6 +9,7 @@
     /// </summary>
     /// <seealso cref="ResourceHints.AuthenticationRequirements"/>
     /// <seealso href="http://tools.ietf.org/html/draft-nottingham-json-home-03#section-4.9">Resource Hints: auth-req (Home Documents for HTTP APIs - draft-nottingham-json-home-03)</seealso>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class AuthenticationRequirement
     {

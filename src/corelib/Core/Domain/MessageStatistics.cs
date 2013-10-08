@@ -7,6 +7,7 @@
     /// This models the JSON object used to represent statistics for a particular
     /// message in a message queue.
     /// </summary>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class MessageStatistics
     {

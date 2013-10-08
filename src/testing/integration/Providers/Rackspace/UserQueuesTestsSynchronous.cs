@@ -17,6 +17,7 @@
     using Path = System.IO.Path;
     using Thread = System.Threading.Thread;
 
+    /// <preliminary/>
     [TestClass]
     public class UserQueuesTestsSynchronous
     {

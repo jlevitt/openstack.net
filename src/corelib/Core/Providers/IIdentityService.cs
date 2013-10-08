@@ -9,6 +9,7 @@
     /// Represents a provider for asynchronous operations on the OpenStack Identity Service.
     /// </summary>
     /// <seealso href="http://docs.openstack.org/api/openstack-identity-service/2.0/content/">OpenStack Identity Service API v2.0 Reference</seealso>
+    /// <preliminary/>
     public interface IIdentityService
     {
         /// <summary>

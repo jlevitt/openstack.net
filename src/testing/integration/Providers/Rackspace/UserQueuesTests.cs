@@ -17,6 +17,7 @@
     using WebException = System.Net.WebException;
     using WebExceptionStatus = System.Net.WebExceptionStatus;
 
+    /// <preliminary/>
     [TestClass]
     public class UserQueuesTests
     {

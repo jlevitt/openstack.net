@@ -7,6 +7,7 @@
     /// Represents a queue message with a strongly-typed body.
     /// </summary>
     /// <typeparam name="T">The type of the data stored in the message body.</typeparam>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class Message<T>
     {

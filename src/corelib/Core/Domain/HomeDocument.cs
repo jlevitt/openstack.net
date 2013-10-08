@@ -8,6 +8,7 @@
     /// <strong>Home Documents for HTTP APIs</strong>.
     /// </summary>
     /// <seealso href="http://tools.ietf.org/html/draft-nottingham-json-home-03#section-2">JSON Home Documents (Home Documents for HTTP APIs - draft-nottingham-json-home-03)</seealso>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class HomeDocument
     {

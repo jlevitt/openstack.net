@@ -9,6 +9,7 @@
     /// Provides extension methods to <see cref="Task"/> and <see cref="Task{TResult}"/> instances
     /// for use within the openstack.net library.
     /// </summary>
+    /// <preliminary/>
     internal static class InternalTaskExtensions
     {
         /// <summary>

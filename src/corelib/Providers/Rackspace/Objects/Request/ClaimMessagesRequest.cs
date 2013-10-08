@@ -3,6 +3,7 @@
     using System;
     using Newtonsoft.Json;
 
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     internal class ClaimMessagesRequest
     {

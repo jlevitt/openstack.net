@@ -21,6 +21,7 @@
     /// <see cref="IQueueingService.DeleteMessagesAsync"/>.
     /// </remarks>
     /// <seealso cref="IQueueingService"/>
+    /// <preliminary/>
     public class Claim : IDisposable
     {
         /// <summary>
