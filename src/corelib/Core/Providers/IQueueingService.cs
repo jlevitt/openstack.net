@@ -7,12 +7,13 @@
     using net.openstack.Core.Domain;
     using Newtonsoft.Json.Linq;
     using CancellationToken = System.Threading.CancellationToken;
+    using JsonSerializationException = Newtonsoft.Json.JsonSerializationException;
     using WebException = System.Net.WebException;
 
     /// <summary>
     /// Represents a provider for asynchronous operations on the OpenStack Marconi (Cloud QUeues) Service.
     /// </summary>
-    /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1&oldid=30943">OpenStack Marconi API v1 Blueprint</seealso>
+    /// <seealso href="https://wiki.openstack.org/w/index.php?title=Marconi/specs/api/v1&amp;oldid=30943">OpenStack Marconi API v1 Blueprint</seealso>
     public interface IQueueingService
     {
         #region Base endpoints

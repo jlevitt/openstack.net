@@ -1,8 +1,14 @@
 ﻿namespace net.openstack.Core.Domain
 {
+    using System;
+    using net.openstack.Core.Providers;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
+    /// <summary>
+    /// Represents a named queue in the <see cref="IQueueingService"/>.
+    /// </summary>
+    /// <seealso cref="IQueueingService"/>
     [JsonObject(MemberSerialization.OptIn)]
     public class CloudQueue
     {
@@ -17,7 +23,7 @@
         /// The backing field for the <see cref="Href"/> property.
         /// </summary>
         [JsonProperty("href")]
-        private string _href;
+        private Uri _href;
 
         /// <summary>
         /// The backing field for the <see cref="Metadata"/> property.
@@ -38,9 +44,9 @@
         }
 
         /// <summary>
-        /// Gets the absolute path of the queue's URI.
+        /// Gets the URI of the queue resource.
         /// </summary>
-        public string Href
+        public Uri Href
         {
             get
             {
