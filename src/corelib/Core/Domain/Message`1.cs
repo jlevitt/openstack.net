@@ -13,7 +13,7 @@
         private T _body;
 
         [JsonConstructor]
-        private Message()
+        protected Message()
         {
         }
 
