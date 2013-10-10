@@ -6,6 +6,7 @@
     /// Specifies when a <see cref="Task"/> representing an asynchronous server operation
     /// should be considered complete.
     /// </summary>
+    /// <preliminary/>
     public enum DnsCompletionOption
     {
         /// <summary>

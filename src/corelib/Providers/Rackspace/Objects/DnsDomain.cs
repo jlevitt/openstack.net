@@ -1,47 +1,94 @@
 ﻿namespace net.openstack.Providers.Rackspace.Objects
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Linq;
+    using net.openstack.Core.Domain;
     using Newtonsoft.Json;
 
+    /// <summary>
+    /// This class models the JSON representation of a domain within the DNS service.
+    /// </summary>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsDomain
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
+        /// <summary>
+        /// This is the backing field for the <see cref="EmailAddress"/> property.
+        /// </summary>
         [JsonProperty("emailAddress")]
         private string _emailAddress;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Updated"/> property.
+        /// </summary>
         [JsonProperty("updated")]
         private DateTimeOffset? _updated;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Created"/> property.
+        /// </summary>
         [JsonProperty("created")]
         private DateTimeOffset? _created;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="AccountId"/> property.
+        /// </summary>
         [JsonProperty("accountId")]
         private string _accountId;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Name"/> property.
+        /// </summary>
         [JsonProperty("name")]
         private string _name;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Id"/> property.
+        /// </summary>
         [JsonProperty("id")]
         private string _id;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Comment"/> property.
+        /// </summary>
         [JsonProperty("comment")]
         private string _comment;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Nameservers"/> property.
+        /// </summary>
         [JsonProperty("nameservers")]
-        private IEnumerable<DnsNameserver> _nameservers;
+        private DnsNameserver[] _nameservers;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="TimeToLive"/> property.
+        /// </summary>
         [JsonProperty("ttl")]
         private int? _timeToLive;
 
+        /// <summary>
+        /// This is an intermediate representation for the <see cref="Records"/> property,
+        /// which is necessary for correctly modeling the JSON response from the server.
+        /// </summary>
         [JsonProperty("recordsList")]
         private RecordsList _recordsList;
 
+        /// <summary>
+        /// This is an intermediate representation for the <see cref="Subdomains"/> property,
+        /// which is necessary for correctly modeling the JSON response from the server.
+        /// </summary>
         [JsonProperty("subdomains")]
         private SubdomainsList _subdomains;
+#pragma warning restore 649
 
+        /// <summary>
+        /// Gets the domain name.
+        /// </summary>
+        /// <value>
+        /// The name of the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Name
         {
             get
@@ -50,6 +97,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets unique ID representing this domain within the DNS service.
+        /// </summary>
+        /// <value>
+        /// The unique ID for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Id
         {
             get
@@ -58,6 +112,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the comment associated with this domain.
+        /// </summary>
+        /// <value>
+        /// The comment for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Comment
         {
             get
@@ -66,7 +127,15 @@
             }
         }
 
-        public string Accountid
+        /// <summary>
+        /// Gets the account ID associated with this domain. The account ID within the DNS service
+        /// is equivalent to the <see cref="Tenant.Id">Tenant.Id</see> referenced by other services.
+        /// </summary>
+        /// <value>
+        /// The account ID for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
+        public string AccountId
         {
             get
             {
@@ -74,6 +143,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the email address associated with this domain.
+        /// </summary>
+        /// <value>
+        /// The email address for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string EmailAddress
         {
             get
@@ -82,6 +158,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the timestamp when this domain was first added to the DNS service.
+        /// </summary>
+        /// <value>
+        /// The creation timestamp for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public DateTimeOffset? Created
         {
             get
@@ -90,6 +173,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the timestamp when this domain was last updated within the DNS service.
+        /// </summary>
+        /// <value>
+        /// The last-updated timestamp for the domain, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public DateTimeOffset? Updated
         {
             get
@@ -98,6 +188,49 @@
             }
         }
 
+        /// <summary>
+        /// Gets a collection of <see cref="DnsRecord"/> objects describing the DNS records for the domain.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="DnsRecord"/> objects, or <c>null</c> if the JSON response from the
+        /// server did not include the associated property.
+        /// </value>
+        public ReadOnlyCollection<DnsRecord> Records
+        {
+            get
+            {
+                if (_recordsList == null)
+                    return null;
+
+                return _recordsList.Records;
+            }
+        }
+
+        /// <summary>
+        /// Gets a collection of <see cref="DnsSubdomain"/> objects describing the DNS subdomains for the domain.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="DnsSubdomain"/> objects, or <c>null</c> if the JSON response from the
+        /// server did not include the associated property.
+        /// </value>
+        public ReadOnlyCollection<DnsSubdomain> Subdomains
+        {
+            get
+            {
+                if (_subdomains == null)
+                    return null;
+
+                return _subdomains.Subdomains;
+            }
+        }
+
+        /// <summary>
+        /// Gets a collection of <see cref="DnsNameserver"/> objects describing the DNS nameservers for the domain.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="DnsNameserver"/> objects, or <c>null</c> if the JSON response from the
+        /// server did not include the associated property.
+        /// </value>
         public ReadOnlyCollection<DnsNameserver> Nameservers
         {
             get
@@ -105,10 +238,17 @@
                 if (_nameservers == null)
                     return null;
 
-                return new ReadOnlyCollection<DnsNameserver>(_nameservers.ToArray());
+                return new ReadOnlyCollection<DnsNameserver>(_nameservers);
             }
         }
 
+        /// <summary>
+        /// Gets the time-to-live for the domain.
+        /// </summary>
+        /// <value>
+        /// A <see cref="TimeSpan"/> object containing the time-to-live for the domain, or <c>null</c> if the
+        /// JSON response from the server did not include the associated property.
+        /// </value>
         public TimeSpan? TimeToLive
         {
             get
@@ -120,18 +260,74 @@
             }
         }
 
+        /// <summary>
+        /// This class models the object associated with the <c>"recordsList"</c> property in
+        /// the JSON model for a DNS domain.
+        /// </summary>
         [JsonObject(MemberSerialization.OptIn)]
         public class RecordsList
         {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
+            /// <summary>
+            /// This is the backing field for the <see cref="Records"/> property.
+            /// </summary>
             [JsonProperty("records")]
-            public IEnumerable<DnsRecord> Records;
+            private DnsRecord[] _records;
+#pragma warning restore 649
+
+            /// <summary>
+            /// Gets a collection of <see cref="DnsRecord"/> objects describing the DNS records
+            /// associated with a <see cref="DnsDomain"/>.
+            /// </summary>
+            /// <value>
+            /// A collection of <see cref="DnsRecord"/> objects, or <c>null</c> if the JSON response
+            /// from the server did not include the associated property.
+            /// </value>
+            public ReadOnlyCollection<DnsRecord> Records
+            {
+                get
+                {
+                    if (_records == null)
+                        return null;
+
+                    return new ReadOnlyCollection<DnsRecord>(_records);
+                }
+            }
         }
 
+        /// <summary>
+        /// This class models the object associated with the <c>"subdomains"</c> property in
+        /// the JSON model for a DNS domain.
+        /// </summary>
         [JsonObject(MemberSerialization.OptIn)]
         public class SubdomainsList
         {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
+            /// <summary>
+            /// This is the backing field for the <see cref="Subdomains"/> property.
+            /// </summary>
             [JsonProperty("domains")]
-            public IEnumerable<DnsSubdomain> Subdomains;
+            private DnsSubdomain[] _subdomains;
+#pragma warning restore 649
+
+            /// <summary>
+            /// Gets a collection of <see cref="DnsSubdomain"/> objects describing the subdomains
+            /// associated with a <see cref="DnsDomain"/>.
+            /// </summary>
+            /// <value>
+            /// A collection of <see cref="DnsSubdomain"/> objects, or <c>null</c> if the JSON response
+            /// from the server did not include the associated property.
+            /// </value>
+            public ReadOnlyCollection<DnsSubdomain> Subdomains
+            {
+                get
+                {
+                    if (_subdomains == null)
+                        return null;
+
+                    return new ReadOnlyCollection<DnsSubdomain>(_subdomains);
+                }
+            }
         }
     }
 }
