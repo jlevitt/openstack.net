@@ -334,7 +334,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<ExportedDomain>> ExportDomainAsync(string domainId, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<ExportedDomain>> ExportDomainAsync(string domainId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<ExportedDomain>> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/export");
             var parameters = new Dictionary<string, string>()
@@ -357,7 +357,7 @@
 
                     DnsJob<ExportedDomain> job = task.Result.ToObject<DnsJob<ExportedDomain>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<ExportedDomain>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<ExportedDomain>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -369,7 +369,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomains>> CreateDomainsAsync(DnsConfiguration configuration, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<DnsDomains>> CreateDomainsAsync(DnsConfiguration configuration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomains>> progress)
         {
             UriTemplate template = new UriTemplate("/domains");
             var parameters = new Dictionary<string, string>();
@@ -389,7 +389,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -401,7 +401,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomains>> CloneDomainAsync(string domainId, string cloneName, bool? cloneSubdomains, bool? modifyRecordData, bool? modifyEmailAddress, bool? modifyComment, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<DnsDomains>> CloneDomainAsync(string domainId, string cloneName, bool? cloneSubdomains, bool? modifyRecordData, bool? modifyEmailAddress, bool? modifyComment, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomains>> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/clone?cloneName={cloneName}&cloneSubdomains={cloneSubdomains}&modifyRecordData={modifyRecordData}&modifyEmailAddress={modifyEmailAddress}&modifyComment={modifyComment}");
             var parameters = new Dictionary<string, string> { { "domainId", domainId }, { "cloneName", cloneName } };
@@ -429,7 +429,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -441,7 +441,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomains>> ImportDomainAsync(IEnumerable<SerializedDomain> serializedDomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<DnsDomains>> ImportDomainAsync(IEnumerable<SerializedDomain> serializedDomains, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomains>> progress)
         {
             if (serializedDomains == null)
                 throw new ArgumentNullException("serializedDomains");
@@ -465,7 +465,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -483,7 +483,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             UriTemplate template = new UriTemplate("/domains?deleteSubdomains={deleteSubdomains}");
             var parameters = new Dictionary<string, string>()
@@ -514,7 +514,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -652,7 +652,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records");
             var parameters = new Dictionary<string, string>()
@@ -676,7 +676,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -694,7 +694,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordIds, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records");
             var parameters = new Dictionary<string, string>()
@@ -725,7 +725,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -815,7 +815,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomain.RecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob<DnsDomain.RecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress)
         {
             UriTemplate template = new UriTemplate("/rdns");
             var parameters = new Dictionary<string, string>();
@@ -841,7 +841,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -859,7 +859,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob> RemovePtrRecordsAsync(string serviceName, Uri deviceResourceUri, IPAddress ipAddress, DnsCompletionOption completionOption, CancellationToken cancellationToken)
+        public Task<DnsJob> RemovePtrRecordsAsync(string serviceName, Uri deviceResourceUri, IPAddress ipAddress, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             UriTemplate template = new UriTemplate("/rdns/{serviceName}?href={deviceResourceUri}&ip={ipAddress}");
             var parameters = new Dictionary<string, string>()
@@ -885,7 +885,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken).Result;
+                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -898,7 +898,7 @@
 
         #endregion
 
-        protected Task<DnsJob> WaitForJobAsync(string jobId, bool showDetails, CancellationToken cancellationToken)
+        protected Task<DnsJob> WaitForJobAsync(string jobId, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             Func<DnsJob> func =
                 () =>
@@ -910,6 +910,9 @@
                         if (job == null || job.Id != jobId)
                             throw new InvalidOperationException("Could not obtain status for job.");
 
+                        if (progress != null)
+                            progress.Report(job);
+
                         if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
                             return job;
 
@@ -920,7 +923,7 @@
             return Task.Factory.StartNew(func);
         }
 
-        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken)
+        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob<TResult>> progress)
         {
             Func<DnsJob<TResult>> func =
                 () =>
@@ -931,6 +934,9 @@
                         DnsJob<TResult> job = GetJobStatus<TResult>(jobId, showDetails, cancellationToken).Result;
                         if (job == null || job.Id != jobId)
                             throw new InvalidOperationException("Could not obtain status for job.");
+
+                        if (progress != null)
+                            progress.Report(job);
 
                         if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
                             return job;

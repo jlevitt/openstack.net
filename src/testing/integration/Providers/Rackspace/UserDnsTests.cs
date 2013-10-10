@@ -58,7 +58,7 @@
                     for (int j = i; j < i + BatchSize && j < allDomains.Length; j++)
                         Console.WriteLine("Deleting domain: {0}", allDomains[j].Name);
 
-                    deleteTasks.Add(provider.RemoveDomainsAsync(allDomains.Skip(i).Take(BatchSize).Select(domain => domain.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token));
+                    deleteTasks.Add(provider.RemoveDomainsAsync(allDomains.Skip(i).Take(BatchSize).Select(domain => domain.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null));
                 }
 
                 Task.WaitAll(deleteTasks.ToArray());
@@ -178,7 +178,7 @@
                         records: new DnsDomainRecordConfiguration[] { },
                         subdomains: new DnsSubdomainConfiguration[] { }));
 
-                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 IEnumerable<DnsDomain> createdDomains = Enumerable.Empty<DnsDomain>();
                 if (createResponse.Status == DnsJobStatus.Error)
                 {
@@ -205,7 +205,7 @@
                     Console.WriteLine(await JsonConvert.SerializeObjectAsync(domain, Formatting.Indented));
                 }
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
@@ -240,7 +240,7 @@
                         records: new DnsDomainRecordConfiguration[] { },
                         subdomains: new DnsSubdomainConfiguration[] { }));
 
-                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (createResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(createResponse.Error.ToString(Formatting.Indented));
@@ -252,7 +252,7 @@
                     domainsToRemove.AddRange(createResponse.Response.Domains.Select(i => i.Id));
                 }
 
-                DnsJob<DnsDomains> cloneResponse = await provider.CloneDomainAsync(createResponse.Response.Domains[0].Id, clonedName, true, true, true, true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> cloneResponse = await provider.CloneDomainAsync(createResponse.Response.Domains[0].Id, clonedName, true, true, true, true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (cloneResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(cloneResponse.Error.ToString(Formatting.Indented));
@@ -264,7 +264,7 @@
                     domainsToRemove.AddRange(cloneResponse.Response.Domains.Select(i => i.Id));
                 }
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
@@ -298,7 +298,7 @@
                         records: new DnsDomainRecordConfiguration[] { },
                         subdomains: new DnsSubdomainConfiguration[] { }));
 
-                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (createResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(createResponse.Error.ToString(Formatting.Indented));
@@ -310,7 +310,7 @@
                     domainsToRemove.AddRange(createResponse.Response.Domains.Select(i => i.Id));
                 }
 
-                DnsJob<ExportedDomain> exportedDomain = await provider.ExportDomainAsync(createResponse.Response.Domains[0].Id, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<ExportedDomain> exportedDomain = await provider.ExportDomainAsync(createResponse.Response.Domains[0].Id, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (exportedDomain.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(exportedDomain.Error.ToString(Formatting.Indented));
@@ -324,7 +324,7 @@
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Contents));
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.ContentType));
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
@@ -337,7 +337,7 @@
                     new SerializedDomain(
                         exportedDomain.Response.Contents,
                         exportedDomain.Response.ContentType);
-                DnsJob<DnsDomains> importedDomain = await provider.ImportDomainAsync(new[] { serializedDomain }, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> importedDomain = await provider.ImportDomainAsync(new[] { serializedDomain }, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (importedDomain.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(importedDomain.Error.ToString(Formatting.Indented));
@@ -349,7 +349,7 @@
                     domainsToRemove.AddRange(importedDomain.Response.Domains.Select(i => i.Id));
                 }
 
-                deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
@@ -384,7 +384,7 @@
                                     comment: "Integration test subdomain")
                             }));
 
-                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 IEnumerable<DnsDomain> createdDomains = Enumerable.Empty<DnsDomain>();
                 if (createResponse.Status == DnsJobStatus.Error)
                 {
@@ -423,7 +423,7 @@
                     Console.WriteLine(await JsonConvert.SerializeObjectAsync(subdomain, Formatting.Indented));
                 }
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), true, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
@@ -451,7 +451,7 @@
                         records: new DnsDomainRecordConfiguration[] { },
                         subdomains: new DnsSubdomainConfiguration[] { }));
 
-                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomains> createResponse = await provider.CreateDomainsAsync(configuration, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 IEnumerable<DnsDomain> createdDomains = Enumerable.Empty<DnsDomain>();
                 if (createResponse.Status == DnsJobStatus.Error)
                 {
@@ -488,7 +488,7 @@
                             priority: null)
 
                     };
-                DnsJob<DnsDomain.RecordsList> recordsResponse = await provider.AddRecordsAsync(domainId, recordConfigurations, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob<DnsDomain.RecordsList> recordsResponse = await provider.AddRecordsAsync(domainId, recordConfigurations, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 DnsRecord[] records = recordsResponse.Response.Records.ToArray();
 
                 foreach (var record in records)
@@ -499,7 +499,7 @@
                     Console.WriteLine(await JsonConvert.SerializeObjectAsync(record, Formatting.Indented));
                 }
 
-                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token);
+                DnsJob deleteResponse = await provider.RemoveDomainsAsync(createdDomains.Select(i => i.Id), false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
                 {
                     Console.WriteLine(deleteResponse.Error.ToString(Formatting.Indented));
