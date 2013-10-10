@@ -46,9 +46,9 @@
 
         #region Jobs
 
-        Task<DnsJob> GetJobStatus(string jobId, bool showDetails, CancellationToken cancellationToken);
+        Task<DnsJob> GetJobStatusAsync(DnsJob job, bool showDetails, CancellationToken cancellationToken);
 
-        Task<DnsJob<TResponse>> GetJobStatus<TResponse>(string jobId, bool showDetails, CancellationToken cancellationToken);
+        Task<DnsJob<TResponse>> GetJobStatusAsync<TResponse>(DnsJob<TResponse> job, bool showDetails, CancellationToken cancellationToken);
 
         #endregion
 

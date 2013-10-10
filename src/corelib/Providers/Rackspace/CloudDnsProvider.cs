@@ -151,17 +151,15 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob> GetJobStatus(string jobId, bool showDetails, CancellationToken cancellationToken)
+        public Task<DnsJob> GetJobStatusAsync(DnsJob job, bool showDetails, CancellationToken cancellationToken)
         {
-            if (jobId == null)
-                throw new ArgumentNullException("jobId");
-            if (string.IsNullOrEmpty(jobId))
-                throw new ArgumentException("jobId cannot be empty");
+            if (job == null)
+                throw new ArgumentNullException("job");
 
             UriTemplate template = new UriTemplate("/status/{jobId}?showDetails={showDetails}");
             var parameters = new Dictionary<string, string>
                 {
-                    { "jobId", jobId },
+                    { "jobId", job.Id },
                     { "showDetails", showDetails ? "true" : "false" },
                 };
 
@@ -188,17 +186,15 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<TResult>> GetJobStatus<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken)
+        public Task<DnsJob<TResult>> GetJobStatusAsync<TResult>(DnsJob<TResult> job, bool showDetails, CancellationToken cancellationToken)
         {
-            if (jobId == null)
-                throw new ArgumentNullException("jobId");
-            if (string.IsNullOrEmpty(jobId))
-                throw new ArgumentException("jobId cannot be empty");
+            if (job == null)
+                throw new ArgumentNullException("job");
 
             UriTemplate template = new UriTemplate("/status/{jobId}?showDetails={showDetails}");
             var parameters = new Dictionary<string, string>
                 {
-                    { "jobId", jobId },
+                    { "jobId", job.Id },
                     { "showDetails", showDetails ? "true" : "false" },
                 };
 
@@ -357,7 +353,7 @@
 
                     DnsJob<ExportedDomain> job = task.Result.ToObject<DnsJob<ExportedDomain>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<ExportedDomain>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -389,7 +385,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -429,7 +425,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -465,7 +461,7 @@
 
                     DnsJob<DnsDomains> job = task.Result.ToObject<DnsJob<DnsDomains>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomains>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -514,7 +510,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -676,7 +672,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -725,7 +721,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -841,7 +837,7 @@
 
                     DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync<DnsDomain.RecordsList>(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -885,7 +881,7 @@
 
                     DnsJob job = task.Result.ToObject<DnsJob>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
-                        job = WaitForJobAsync(job.Id, true, cancellationToken, progress).Result;
+                        job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
                     return job;
                 };
@@ -898,23 +894,26 @@
 
         #endregion
 
-        protected Task<DnsJob> WaitForJobAsync(string jobId, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob> progress)
+        protected Task<DnsJob> WaitForJobAsync(DnsJob job, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
+            if (job == null)
+                throw new ArgumentNullException("job");
+
             Func<DnsJob> func =
                 () =>
                 {
                     while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        DnsJob job = GetJobStatus(jobId, showDetails, cancellationToken).Result;
-                        if (job == null || job.Id != jobId)
+                        DnsJob updatedJob = GetJobStatusAsync(job, showDetails, cancellationToken).Result;
+                        if (updatedJob == null || updatedJob.Id != job.Id)
                             throw new InvalidOperationException("Could not obtain status for job.");
 
                         if (progress != null)
-                            progress.Report(job);
+                            progress.Report(updatedJob);
 
-                        if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
-                            return job;
+                        if (updatedJob.Status == DnsJobStatus.Completed || updatedJob.Status == DnsJobStatus.Error)
+                            return updatedJob;
 
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
@@ -923,23 +922,26 @@
             return Task.Factory.StartNew(func);
         }
 
-        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(string jobId, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob<TResult>> progress)
+        protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(DnsJob<TResult> job, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob<TResult>> progress)
         {
+            if (job == null)
+                throw new ArgumentNullException("job");
+
             Func<DnsJob<TResult>> func =
                 () =>
                 {
                     while (true)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        DnsJob<TResult> job = GetJobStatus<TResult>(jobId, showDetails, cancellationToken).Result;
-                        if (job == null || job.Id != jobId)
+                        DnsJob<TResult> updatedJob = GetJobStatusAsync(job, showDetails, cancellationToken).Result;
+                        if (updatedJob == null || updatedJob.Id != job.Id)
                             throw new InvalidOperationException("Could not obtain status for job.");
 
                         if (progress != null)
-                            progress.Report(job);
+                            progress.Report(updatedJob);
 
-                        if (job.Status == DnsJobStatus.Completed || job.Status == DnsJobStatus.Error)
-                            return job;
+                        if (updatedJob.Status == DnsJobStatus.Completed || updatedJob.Status == DnsJobStatus.Error)
+                            return updatedJob;
 
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
