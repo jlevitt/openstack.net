@@ -488,7 +488,7 @@
                             priority: null)
 
                     };
-                DnsJob<DnsDomain.RecordsList> recordsResponse = await provider.AddRecordsAsync(domainId, recordConfigurations, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
+                DnsJob<DnsRecordsList> recordsResponse = await provider.AddRecordsAsync(domainId, recordConfigurations, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 DnsRecord[] records = recordsResponse.Response.Records.ToArray();
 
                 foreach (var record in records)

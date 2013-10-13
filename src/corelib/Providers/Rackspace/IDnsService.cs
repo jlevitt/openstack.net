@@ -86,7 +86,7 @@
 
         Task<DnsRecord> ListRecordDetailsAsync(string domainId, string recordId, CancellationToken cancellationToken);
 
-        Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress);
+        Task<DnsJob<DnsRecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress);
 
         Task UpdateRecordsAsync();
 
@@ -121,7 +121,7 @@
         /// <para>-or-</para>
         /// <para>If <paramref name="recordConfigurations"/> contains a record with a <see cref="DnsDomainRecordConfiguration.Type"/> that is not <see cref="DnsRecordType.Ptr"/>.</para>
         /// </exception>
-        Task<DnsJob<DnsDomain.RecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress);
+        Task<DnsJob<DnsRecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress);
 
         Task UpdatePtrRecordsAsync();
 

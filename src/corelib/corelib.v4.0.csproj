@@ -135,6 +135,7 @@
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimitPattern.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimits.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRecord.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsRecordsList.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRecordType.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsServiceLimits.cs" />
     <Compile Include="Providers\Rackspace\Exceptions\BulkDeletionException.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Providers\Rackspace\IDnsService.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomain.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomainConfiguration.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsSubdomainsList.cs" />
     <Compile Include="Providers\Rackspace\Objects\ExportedDomain.cs" />
     <Compile Include="Providers\Rackspace\Objects\LimitType.cs" />
     <Compile Include="Providers\Rackspace\NamespaceDoc.cs" />

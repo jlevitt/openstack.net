@@ -648,7 +648,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomain.RecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress)
+        public Task<DnsJob<DnsRecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records");
             var parameters = new Dictionary<string, string>()
@@ -663,14 +663,14 @@
             Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
                 GetResponseAsyncFunc<JObject>(cancellationToken);
 
-            Func<Task<JObject>, DnsJob<DnsDomain.RecordsList>> resultSelector =
+            Func<Task<JObject>, DnsJob<DnsRecordsList>> resultSelector =
                 task =>
                 {
                     JObject result = task.Result;
                     if (result == null)
                         return null;
 
-                    DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
+                    DnsJob<DnsRecordsList> job = task.Result.ToObject<DnsJob<DnsRecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
                         job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
@@ -811,7 +811,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<DnsJob<DnsDomain.RecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomain.RecordsList>> progress)
+        public Task<DnsJob<DnsRecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress)
         {
             UriTemplate template = new UriTemplate("/rdns");
             var parameters = new Dictionary<string, string>();
@@ -828,14 +828,14 @@
             Func<Task<HttpWebRequest>, Task<JObject>> requestResource =
                 GetResponseAsyncFunc<JObject>(cancellationToken);
 
-            Func<Task<JObject>, DnsJob<DnsDomain.RecordsList>> resultSelector =
+            Func<Task<JObject>, DnsJob<DnsRecordsList>> resultSelector =
                 task =>
                 {
                     JObject result = task.Result;
                     if (result == null)
                         return null;
 
-                    DnsJob<DnsDomain.RecordsList> job = task.Result.ToObject<DnsJob<DnsDomain.RecordsList>>();
+                    DnsJob<DnsRecordsList> job = task.Result.ToObject<DnsJob<DnsRecordsList>>();
                     if (completionOption == DnsCompletionOption.RequestCompleted)
                         job = WaitForJobAsync(job, true, cancellationToken, progress).Result;
 
