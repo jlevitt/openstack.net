@@ -8,6 +8,7 @@
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsRateLimit
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("verb")]
         [JsonConverter(typeof(StringEnumConverter))]
         private HttpMethod _verb;
@@ -23,5 +24,6 @@
 
         [JsonProperty("next-available")]
         private DateTimeOffset _nextAvailable;
+#pragma warning restore 649
     }
 }

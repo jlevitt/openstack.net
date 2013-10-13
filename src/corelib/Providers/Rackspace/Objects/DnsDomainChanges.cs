@@ -7,6 +7,7 @@
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsDomainChanges
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("totalEntries")]
         private int _totalEntries;
 
@@ -18,6 +19,7 @@
 
         [JsonProperty("changes")]
         private DnsDomainChange[] _changes;
+#pragma warning restore 649
 
         public ReadOnlyCollection<DnsDomainChange> Changes
         {

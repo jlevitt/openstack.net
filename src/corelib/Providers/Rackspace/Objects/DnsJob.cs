@@ -9,6 +9,7 @@
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsJob
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("request")]
         private string _request;
 
@@ -30,6 +31,7 @@
 
         [JsonProperty("error")]
         private JObject _error;
+#pragma warning restore 649
 
         public string Id
         {

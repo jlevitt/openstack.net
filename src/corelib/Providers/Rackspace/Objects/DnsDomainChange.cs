@@ -5,6 +5,7 @@
 
     public class DnsDomainChange
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("action")]
         private string _action;
 
@@ -22,6 +23,7 @@
 
         [JsonProperty("domain")]
         private string _domainName;
+#pragma warning restore 649
 
         public ReadOnlyCollection<DnsChange> Details
         {

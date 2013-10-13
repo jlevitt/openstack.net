@@ -6,6 +6,7 @@
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsRecord
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("ttl")]
         private int? _timeToLive;
 
@@ -32,6 +33,7 @@
 
         [JsonProperty("updated")]
         private DateTimeOffset? _updated;
+#pragma warning restore 649
 
         public string Id
         {

@@ -6,6 +6,7 @@
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsSubdomain
     {
+#pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("emailAddress")]
         private string _emailAddress;
 
@@ -23,6 +24,7 @@
 
         [JsonProperty("updated")]
         private DateTimeOffset? _updated;
+#pragma warning restore 649
 
         public string Id
         {
