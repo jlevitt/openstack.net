@@ -4,6 +4,11 @@
     using System.Collections.Concurrent;
     using net.openstack.Core.Domain.Converters;
 
+    /// <summary>
+    /// Represents the base class for extensible enumeration types used
+    /// for strongly-typed values in JSON object models.
+    /// </summary>
+    /// <typeparam name="T">The enumeration type.</typeparam>
     public abstract class ExtensibleEnum<T> : IEquatable<T>
         where T : ExtensibleEnum<T>
     {
