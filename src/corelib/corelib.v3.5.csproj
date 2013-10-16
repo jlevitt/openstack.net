@@ -185,6 +185,7 @@
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimit.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimitPattern.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRateLimits.cs" />
+    <Compile Include="Providers\Rackspace\Objects\DnsRateLimitUnit.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRecord.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRecordsList.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsRecordType.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="Providers\Rackspace\Objects\Response\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\RoleResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\SerializedDomain.cs" />
+    <Compile Include="Providers\Rackspace\Objects\SerializedDomainFormat.cs" />
     <Compile Include="Providers\Rackspace\Validators\CloudFilesValidator.cs" />
     <Compile Include="Core\Validators\IObjectStorageValidator.cs" />
     <Compile Include="Providers\Rackspace\EncodeDecodeProvider.cs" />

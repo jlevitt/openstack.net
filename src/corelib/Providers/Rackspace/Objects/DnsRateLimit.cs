@@ -14,7 +14,7 @@
         private HttpMethod _verb;
 
         [JsonProperty("unit")]
-        private string _unit;
+        private DnsRateLimitUnit _unit;
 
         [JsonProperty("value")]
         private long? _value;

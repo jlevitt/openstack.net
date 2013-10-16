@@ -10,14 +10,14 @@
         private string _contents;
 
         [JsonProperty("contentType")]
-        private string _contentType;
+        private SerializedDomainFormat _contentType;
 
         [JsonConstructor]
         protected SerializedDomain()
         {
         }
 
-        public SerializedDomain(string contents, string contentType)
+        public SerializedDomain(string contents, SerializedDomainFormat contentType)
         {
             if (contents == null)
                 throw new ArgumentNullException("contents");
@@ -25,8 +25,6 @@
                 throw new ArgumentNullException("contentType");
             if (string.IsNullOrEmpty(contents))
                 throw new ArgumentException("contents cannot be empty");
-            if (string.IsNullOrEmpty(contentType))
-                throw new ArgumentException("contentType cannot be empty");
 
             _contents = contents;
             _contentType = contentType;
@@ -40,7 +38,7 @@
             }
         }
 
-        public string ContentType
+        public SerializedDomainFormat ContentType
         {
             get
             {
