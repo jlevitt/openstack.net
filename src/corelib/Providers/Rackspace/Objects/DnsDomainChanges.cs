@@ -9,13 +9,13 @@
     {
 #pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
         [JsonProperty("totalEntries")]
-        private int _totalEntries;
+        private int? _totalEntries;
 
         [JsonProperty("from")]
-        private DateTimeOffset _from;
+        private DateTimeOffset? _from;
 
         [JsonProperty("to")]
-        private DateTimeOffset _to;
+        private DateTimeOffset? _to;
 
         [JsonProperty("changes")]
         private DnsDomainChange[] _changes;
