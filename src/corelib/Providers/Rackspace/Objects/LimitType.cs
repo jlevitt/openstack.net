@@ -12,7 +12,11 @@
     /// This class functions as a strongly-typed enumeration of known limit types,
     /// with added support for unknown types returned by a server extension.
     /// </remarks>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/Rate_Limits-d1e1222.html">Rate Limits (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/Domain_Limits.html">Domain Limits (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/Record_Limits.html">Record Limits (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonConverter(typeof(LimitType.Converter))]
     public sealed class LimitType : ExtensibleEnum<LimitType>
     {
@@ -48,7 +52,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="LimitType"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="LimitType"/> representing rate limits in effect for the DNS service.
         /// </summary>
         public static LimitType Rate
         {
@@ -59,7 +63,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="LimitType"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="LimitType"/> representing absolute limits in place for domains in the DNS service.
         /// </summary>
         public static LimitType Domain
         {
@@ -70,7 +74,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="LimitType"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="LimitType"/> representing absolute limits in place for records in the DNS service.
         /// </summary>
         public static LimitType DomainRecord
         {
@@ -85,6 +89,7 @@
         /// objects to JSON string values.
         /// </summary>
         /// <threadsafety static="true" instance="false"/>
+        /// <preliminary/>
         private sealed class Converter : ConverterBase
         {
             /// <inheritdoc/>

@@ -3,38 +3,79 @@
     using System;
     using Newtonsoft.Json;
 
+    /// <summary>
+    /// This class describes a single record associated with a domain in the DNS service.
+    /// </summary>
+    /// <seealso cref="IDnsService.ListRecordDetailsAsync"/>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/List_Record_Details-d1e4770.html">List Record Details (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+    /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsRecord
     {
 #pragma warning disable 649 // Field 'fieldName' is never assigned to, and will always have its default value
+        /// <summary>
+        /// This is the backing field for the <see cref="TimeToLive"/> property.
+        /// </summary>
         [JsonProperty("ttl")]
         private int? _timeToLive;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Name"/> property.
+        /// </summary>
         [JsonProperty("name")]
         private string _name;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Id"/> property.
+        /// </summary>
         [JsonProperty("id")]
         private string _id;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Type"/> property.
+        /// </summary>
         [JsonProperty("type")]
         private DnsRecordType _type;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Comment"/> property.
+        /// </summary>
         [JsonProperty("comment")]
         private string _comment;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Data"/> property.
+        /// </summary>
         [JsonProperty("data")]
         private string _data;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Priority"/> property.
+        /// </summary>
         [JsonProperty("priority")]
         private int? _priority;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Created"/> property.
+        /// </summary>
         [JsonProperty("created")]
         private DateTimeOffset? _created;
 
+        /// <summary>
+        /// This is the backing field for the <see cref="Updated"/> property.
+        /// </summary>
         [JsonProperty("updated")]
         private DateTimeOffset? _updated;
 #pragma warning restore 649
 
+        /// <summary>
+        /// Gets the unique ID representing this record within the DNS service.
+        /// </summary>
+        /// <value>
+        /// The unique ID for the record, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Id
         {
             get
@@ -43,6 +84,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the DNS record type.
+        /// </summary>
+        /// <value>
+        /// The DNS record type, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public DnsRecordType Type
         {
             get
@@ -51,6 +99,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the name of the DNS record.
+        /// </summary>
+        /// <value>
+        /// The DNS record name, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Name
         {
             get
@@ -59,6 +114,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the data associated with the DNS record.
+        /// </summary>
+        /// <value>
+        /// The DNS record data, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public string Data
         {
             get
@@ -67,6 +129,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the time-to-live for the DNS record.
+        /// </summary>
+        /// <value>
+        /// The time-to-live of the DNS record, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public TimeSpan? TimeToLive
         {
             get
@@ -78,6 +147,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the timestamp when this DNS record was initially created.
+        /// </summary>
+        /// <value>
+        /// The creation timestamp of the DNS record, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public DateTimeOffset? Created
         {
             get
@@ -86,6 +162,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the timestamp when this DNS record was last updated.
+        /// </summary>
+        /// <value>
+        /// The last-updated timestamp of the DNS record, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public DateTimeOffset? Updated
         {
             get
@@ -94,6 +177,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the priority of this DNS record.
+        /// </summary>
+        /// <value>
+        /// The priority of the DNS record, or <c>null</c> if the JSON response from the server
+        /// did not include this property.
+        /// </value>
         public int? Priority
         {
             get
@@ -102,6 +192,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the optional comment associated with the DNS record.
+        /// </summary>
+        /// <value>
+        /// The comment associated with the DNS record, or <c>null</c> if the JSON response from the server
+        /// did not include this property or if the record does not have an associated comment.
+        /// </value>
         public string Comment
         {
             get

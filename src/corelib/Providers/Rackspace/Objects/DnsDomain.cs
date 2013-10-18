@@ -8,6 +8,7 @@
     /// <summary>
     /// This class models the JSON representation of a domain within the DNS service.
     /// </summary>
+    /// <threadsafety static="true" instance="false"/>
     /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsDomain

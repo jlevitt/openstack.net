@@ -12,7 +12,9 @@
     /// This class functions as a strongly-typed enumeration of known statuses,
     /// with added support for unknown statuses returned by a server extension.
     /// </remarks>
+    /// <seealso cref="DnsJob.Status"/>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonConverter(typeof(DnsJobStatus.Converter))]
     public sealed class DnsJobStatus : ExtensibleEnum<DnsJobStatus>
     {
@@ -49,7 +51,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="DnsJobStatus"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="DnsJobStatus"/> representing a job which has been accepted by the DNS service but has not yet started.
         /// </summary>
         public static DnsJobStatus Initialized
         {
@@ -60,7 +62,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="DnsJobStatus"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="DnsJobStatus"/> representing a job which is currently running.
         /// </summary>
         public static DnsJobStatus Running
         {
@@ -71,7 +73,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="DnsJobStatus"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="DnsJobStatus"/> representing a job which completed successfully.
         /// </summary>
         public static DnsJobStatus Completed
         {
@@ -82,7 +84,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="DnsJobStatus"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="DnsJobStatus"/> representing a job which terminated with an error.
         /// </summary>
         public static DnsJobStatus Error
         {
@@ -97,6 +99,7 @@
         /// objects to JSON string values.
         /// </summary>
         /// <threadsafety static="true" instance="false"/>
+        /// <preliminary/>
         private sealed class Converter : ConverterBase
         {
             /// <inheritdoc/>

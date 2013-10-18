@@ -7,6 +7,8 @@
     /// </summary>
     /// <seealso cref="DnsDomainChange"/>
     /// <seealso cref="IDnsService.ListDomainChangesAsync"/>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/List_Domain_Changes.html">List Domain Changes (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+    /// <threadsafety static="true" instance="false"/>
     /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsChange

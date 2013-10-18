@@ -13,6 +13,7 @@
     /// formats, with added support for unknown formats returned by a server extension.
     /// </remarks>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonConverter(typeof(SerializedDomainFormat.Converter))]
     public sealed class SerializedDomainFormat : ExtensibleEnum<SerializedDomainFormat>
     {
@@ -46,7 +47,7 @@
         }
 
         /// <summary>
-        /// Gets a <see cref="SerializedDomainFormat"/> representing <placeholder>placeholder</placeholder>.
+        /// Gets a <see cref="SerializedDomainFormat"/> representing a <see href="http://en.wikipedia.org/wiki/BIND">BIND 9</see> serialized domain.
         /// </summary>
         public static SerializedDomainFormat Bind9
         {

@@ -20,6 +20,13 @@
     using StreamReader = System.IO.StreamReader;
     using Thread = System.Threading.Thread;
 
+    /// <summary>
+    /// Provides an implementation of <see cref="IDnsService"/> for operating
+    /// with Rackspace's Cloud DNS product.
+    /// </summary>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/index.html">Rackspace Cloud DNS Developer Guide - API v1.0</seealso>
+    /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     public class CloudDnsProvider : ProviderBase<IDnsService>, IDnsService
     {
         /// <summary>

@@ -9,6 +9,8 @@
     /// </summary>
     /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/supported_record_types.html">Supported Record Types (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
     /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/Add_Records-d1e4895.html">Add Records (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+    /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsDomainRecordConfiguration
     {
@@ -92,7 +94,7 @@
             if (string.IsNullOrEmpty(data))
                 throw new ArgumentException("data cannot be empty");
             if (timeToLive <= TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException("timeToLive");
+                throw new ArgumentOutOfRangeException("timeToLive cannot be negative or zero");
             if (priority < 0)
                 throw new ArgumentOutOfRangeException("priority");
 

@@ -12,7 +12,9 @@
     /// This class functions as a strongly-typed enumeration of known record types,
     /// with added support for unknown types returned by a server extension.
     /// </remarks>
+    /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/supported_record_types.html">Supported Record Types (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonConverter(typeof(DnsRecordType.Converter))]
     public sealed class DnsRecordType : ExtensibleEnum<DnsRecordType>
     {
@@ -145,6 +147,7 @@
         /// objects to JSON string values.
         /// </summary>
         /// <threadsafety static="true" instance="false"/>
+        /// <preliminary/>
         private sealed class Converter : ConverterBase
         {
             /// <inheritdoc/>

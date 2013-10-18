@@ -9,7 +9,15 @@
     /// <summary>
     /// Represents the configuration of a collection of domains being added to the DNS service.
     /// </summary>
+    /// <remarks>
+    /// <note type="inherit">
+    /// This class can be extended if a server extension requires additional information (beyond
+    /// the <c>domains</c> property which is already supported) be sent in the body of a
+    /// <strong>Create Domain</strong> API call.
+    /// </note>
+    /// </remarks>
     /// <seealso cref="IDnsService.CreateDomainsAsync"/>
+    /// <threadsafety static="true" instance="false"/>
     /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsConfiguration

@@ -13,6 +13,7 @@
     /// with added support for unknown formats returned by a server extension.
     /// </remarks>
     /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonConverter(typeof(DnsRateLimitUnit.Converter))]
     public sealed class DnsRateLimitUnit : ExtensibleEnum<DnsRateLimitUnit>
     {
@@ -73,6 +74,7 @@
         /// objects to JSON string values.
         /// </summary>
         /// <threadsafety static="true" instance="false"/>
+        /// <preliminary/>
         private sealed class Converter : ConverterBase
         {
             /// <inheritdoc/>

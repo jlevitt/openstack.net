@@ -7,6 +7,8 @@
     /// This class models the object associated with the <c>"recordsList"</c> property in
     /// the JSON model for a DNS domain.
     /// </summary>
+    /// <threadsafety static="true" instance="false"/>
+    /// <preliminary/>
     [JsonObject(MemberSerialization.OptIn)]
     public class DnsRecordsList
     {
