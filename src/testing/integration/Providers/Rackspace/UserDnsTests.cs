@@ -275,7 +275,7 @@
         }
 
         /// <summary>
-        /// This tests the behavior of the <see cref="IDnsService.CloneDomainsAsync"/>.
+        /// This tests the behavior of the <see cref="IDnsService.ExportDomainAsync"/> and <see cref="IDnsService.ImportDomainAsync"/>.
         /// </summary>
         /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
         [TestMethod]
@@ -549,6 +549,8 @@
         /// represents an asynchronous operation to gather a subset of the available
         /// domains.
         /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="provider"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="limit"/> is less than or equal to 0.</exception>
         private static IEnumerable<DnsDomain> ListAllDomains(IDnsService provider, string domainName, int? limit, CancellationToken cancellationToken)
         {
             if (limit <= 0)
