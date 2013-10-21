@@ -191,8 +191,10 @@
     <Compile Include="Providers\Rackspace\Objects\LoadBalancerMetadataItem.cs" />
     <Compile Include="Providers\Rackspace\Objects\Request\AddLoadBalancerMetadataRequest.cs" />
     <Compile Include="Providers\Rackspace\Objects\Request\SetLoadBalancerConnectionLoggingRequest.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Request\SetLoadBalancerContentCachingRequest.cs" />
     <Compile Include="Providers\Rackspace\Objects\Request\UpdateLoadBalancerMetadataItemRequest.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerConnectionLoggingResponse.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerContentCachingResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerMetadataItemResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancerMetadataResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingAlgorithmsResponse.cs" />
