@@ -884,6 +884,28 @@
 
         #endregion
 
+        /// <summary>
+        /// Waits for an asynchronous server job to complete.
+        /// </summary>
+        /// <param name="job">The <see cref="DnsJob"/> to wait for.</param>
+        /// <param name="showDetails"><c>true</c> to include detailed information about the job; otherwise, <c>false</c>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <param name="progress">An optional callback object to receive progress notifications. If this is <c>null</c>, no progress notifications are sent.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully,
+        /// the <see cref="Task{TResult}.Result"/> property will return a <see cref="DnsJob"/> object
+        /// describing the asynchronous server operation. The job will additionally be in one of the following
+        /// states.
+        ///
+        /// <list type="bullet">
+        /// <item><see cref="DnsJobStatus.Completed"/></item>
+        /// <item><see cref="DnsJobStatus.Error"/>: In this case the <see cref="DnsJob.Error"/> property provides
+        /// additional information about the error which occurred during the asynchronous server operation.</item>
+        /// </list>
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="job"/> is <c>null</c>.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/sync_asynch_responses.html">Synchronous and Asynchronous Responses (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
         protected Task<DnsJob> WaitForJobAsync(DnsJob job, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             if (job == null)
@@ -912,6 +934,31 @@
             return Task.Factory.StartNew(func);
         }
 
+        /// <summary>
+        /// Waits for an asynchronous server job with a strongly-typed result to complete.
+        /// </summary>
+        /// <typeparam name="TResult">The class modeling the JSON result of the asynchronous operation.</typeparam>
+        /// <param name="job">The <see cref="DnsJob{TResponse}"/> to wait for.</param>
+        /// <param name="showDetails"><c>true</c> to include detailed information about the job; otherwise, <c>false</c>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <param name="progress">An optional callback object to receive progress notifications. If this is <c>null</c>, no progress notifications are sent.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully,
+        /// the <see cref="Task{TResult}.Result"/> property will return a <see cref="DnsJob{TResponse}"/> object
+        /// describing the asynchronous server operation. The job will additionally be in one of the following
+        /// states.
+        ///
+        /// <list type="bullet">
+        /// <item><see cref="DnsJobStatus.Completed"/>: In this case the <see cref="DnsJob{TResponse}.Response"/>
+        /// property provides the strongly-typed <typeparamref name="TResult"/> object which is the result of the
+        /// operation.</item>
+        /// <item><see cref="DnsJobStatus.Error"/>: In this case the <see cref="DnsJob.Error"/> property provides
+        /// additional information about the error which occurred during the asynchronous server operation.</item>
+        /// </list>
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="job"/> is <c>null</c>.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/sync_asynch_responses.html">Synchronous and Asynchronous Responses (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
         protected Task<DnsJob<TResult>> WaitForJobAsync<TResult>(DnsJob<TResult> job, bool showDetails, CancellationToken cancellationToken, IProgress<DnsJob<TResult>> progress)
         {
             if (job == null)

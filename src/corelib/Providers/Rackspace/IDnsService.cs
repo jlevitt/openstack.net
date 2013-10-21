@@ -66,6 +66,7 @@
         /// <summary>
         /// Gets information about an asynchronous task with a strongly-typed result being executed by the DNS service.
         /// </summary>
+        /// <typeparam name="TResponse">The class modeling the JSON result of the asynchronous operation.</typeparam>
         /// <param name="job">The <see cref="DnsJob{TResponse}"/> to query.</param>
         /// <param name="showDetails"><c>true</c> to include detailed information about the job; otherwise, <c>false</c>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
