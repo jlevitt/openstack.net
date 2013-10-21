@@ -102,5 +102,76 @@
         }
 
         #endregion Limits
+
+        #region Jobs
+
+        /// <summary>
+        /// Gets information about an asynchronous task being executed by the DNS service.
+        /// </summary>
+        /// <param name="service">The DNS service instance.</param>
+        /// <param name="job">The <see cref="DnsJob"/> to query.</param>
+        /// <param name="showDetails"><c>true</c> to include detailed information about the job; otherwise, <c>false</c>.</param>
+        /// <returns>A <see cref="DnsJob"/> object containing the updated job information.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="service"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="job"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/sync_asynch_responses.html">Synchronous and Asynchronous Responses (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+        public static DnsJob GetJobStatus(this IDnsService service, DnsJob job, bool showDetails)
+        {
+            if (service == null)
+                throw new ArgumentNullException("service");
+
+            try
+            {
+                return service.GetJobStatusAsync(job, showDetails, CancellationToken.None).Result;
+            }
+            catch (AggregateException ex)
+            {
+                ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
+                if (innerExceptions.Count == 1)
+                    throw innerExceptions[0];
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Gets information about an asynchronous task with a strongly-typed result being executed by the DNS service.
+        /// </summary>
+        /// <param name="service">The DNS service instance.</param>
+        /// <param name="job">The <see cref="DnsJob{TResponse}"/> to query.</param>
+        /// <param name="showDetails"><c>true</c> to include detailed information about the job; otherwise, <c>false</c>.</param>
+        /// <returns>A <see cref="DnsJob{TResult}"/> object containing the updated job information.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="service"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="job"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="JsonSerializationException">If an error occurs while deserializing the response object.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/sync_asynch_responses.html">Synchronous and Asynchronous Responses (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
+        public static DnsJob<TResponse> GetJobStatus<TResponse>(this IDnsService service, DnsJob<TResponse> job, bool showDetails)
+        {
+            if (service == null)
+                throw new ArgumentNullException("service");
+
+            try
+            {
+                return service.GetJobStatusAsync(job, showDetails, CancellationToken.None).Result;
+            }
+            catch (AggregateException ex)
+            {
+                ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
+                if (innerExceptions.Count == 1)
+                    throw innerExceptions[0];
+
+                throw;
+            }
+        }
+
+        #endregion Jobs
     }
 }
