@@ -8,6 +8,76 @@
 
     public interface ILoadBalancerService
     {
+        #region Sessions
+
+        /// <summary>
+        /// Gets the session persistence configuration for a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a <see cref="SessionPersistence"/>
+        /// object describing the session persistence configuration for the load balancer.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Manage_Session_Persistence-d1e3733.html">Manage Session Persistence (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<SessionPersistence> GetSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the session persistence configuration for a load balancer.
+        /// </summary>
+        /// <remarks>
+        /// You can only set one of the session persistence modes on a load balancer, and it can only support one
+        /// protocol, so if you set <see cref="SessionPersistenceType.HttpCookie"/> mode for an HTTP load balancer,
+        /// then it will support session persistence for HTTP requests only. Likewise, if you set
+        /// <see cref="SessionPersistenceType.SourceAddress"/> mode for an HTTPS load balancer, then it will support
+        /// session persistence for HTTPS requests only.
+        ///
+        /// <para>
+        /// If you want to support session persistence for both HTTP and HTTPS requests concurrently, then you have 2 choices:
+        /// </para>
+        ///
+        /// <list type="bullet">
+        /// <item>Use two load balancers, one configured for session persistence for HTTP requests and the other
+        /// configured for session persistence for HTTPS requests. That way, the load balancers together will support
+        /// session persistence for both HTTP and HTTPS requests concurrently, with each load balancer supporting one
+        /// of the protocols.</item>
+        /// <item>Use one load balancer, configure it for session persistence for HTTP requests, and then enable SSL
+        /// termination for that load balancer (refer to Section 4.17, "SSL Termination" for details). The load
+        /// balancer will then support session persistence for both HTTP and HTTPS requests concurrently.</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="sessionPersistence">The session persistence configuration.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="sessionPersistence"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Manage_Session_Persistence-d1e3733.html">Manage Session Persistence (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task SetSessionPersistenceAsync(string loadBalancerId, SessionPersistence sessionPersistence, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the session persistence configuration for a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Manage_Session_Persistence-d1e3733.html">Manage Session Persistence (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        #endregion Sessions
+
         #region Connections
 
         /// <summary>
