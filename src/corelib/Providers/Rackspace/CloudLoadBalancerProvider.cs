@@ -55,6 +55,24 @@
         }
 
         /// <inheritdoc/>
+        public Task<ConnectionThrottles> ListThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
         public Task<bool> GetContentCachingAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
