@@ -568,7 +568,7 @@
         }
 
         /// <inheritdoc/>
-        public Task<Tuple<IEnumerable<DnsRecord>, int?>> ListRecordsAsync(string domainId, string recordType, string recordName, string recordData, int? offset, int? limit, CancellationToken cancellationToken)
+        public Task<Tuple<IEnumerable<DnsRecord>, int?>> ListRecordsAsync(string domainId, DnsRecordType recordType, string recordName, string recordData, int? offset, int? limit, CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records?type={recordType}&name={recordName}&data={recordData}&offset={offset}&limit={limit}");
             var parameters = new Dictionary<string, string>
@@ -576,7 +576,7 @@
                     { "domainId", domainId }
                 };
             if (recordType != null)
-                parameters.Add("recordType", recordType);
+                parameters.Add("recordType", recordType.Name);
             if (recordName != null)
                 parameters.Add("recordName", recordName);
             if (recordData != null)
