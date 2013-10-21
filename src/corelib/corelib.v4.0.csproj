@@ -114,6 +114,7 @@
     <Compile Include="Core\ResponseExtensions.cs" />
     <Compile Include="Core\RestWebHeaderCollection.cs" />
     <Compile Include="Core\Synchronous\ClaimExtensions.cs" />
+    <Compile Include="Core\Synchronous\DnsServiceExtensions.cs" />
     <Compile Include="Core\Synchronous\QueueingServiceExtensions.cs" />
     <Compile Include="Core\Validators\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\CloudDnsProvider.cs" />
