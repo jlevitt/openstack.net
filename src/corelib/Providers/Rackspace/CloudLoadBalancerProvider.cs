@@ -178,19 +178,82 @@
         /// <inheritdoc/>
         public Task<ConnectionThrottles> ListThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/connectionthrottle");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancerThrottlesResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancerThrottlesResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancerThrottlesResponse>, ConnectionThrottles> resultSelector =
+                task => task.Result.Throttles;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (throttleConfiguration == null)
+                throw new ArgumentNullException("throttleConfiguration");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/connectionthrottle");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters, throttleConfiguration);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>
         public Task RemoveThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/connectionthrottle");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>

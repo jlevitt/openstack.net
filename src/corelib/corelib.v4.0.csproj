@@ -197,6 +197,7 @@
     <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerContentCachingResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerMetadataItemResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancerMetadataResponse.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancerThrottlesResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingAlgorithmsResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingProtocolsResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomain.cs" />
