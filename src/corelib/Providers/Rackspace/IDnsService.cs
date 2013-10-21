@@ -270,8 +270,6 @@
         /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/import_domain.html">Import Domain (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
         Task<DnsJob<DnsDomains>> ImportDomainAsync(IEnumerable<SerializedDomain> serializedDomains, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsDomains>> progress);
 
-        Task UpdateDomainsAsync();
-
         /// <summary>
         /// Removes one or more domains from the DNS service.
         /// </summary>
@@ -319,8 +317,6 @@
 
         Task<DnsJob<DnsRecordsList>> AddRecordsAsync(string domainId, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress);
 
-        Task UpdateRecordsAsync();
-
         Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress);
 
         #endregion
@@ -353,8 +349,6 @@
         /// <para>If <paramref name="recordConfigurations"/> contains a record with a <see cref="DnsDomainRecordConfiguration.Type"/> that is not <see cref="DnsRecordType.Ptr"/>.</para>
         /// </exception>
         Task<DnsJob<DnsRecordsList>> AddPtrRecordsAsync(string serviceName, Uri deviceResourceUri, IEnumerable<DnsDomainRecordConfiguration> recordConfigurations, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob<DnsRecordsList>> progress);
-
-        Task UpdatePtrRecordsAsync();
 
         Task<DnsJob> RemovePtrRecordsAsync(string serviceName, Uri deviceResourceUri, IPAddress ipAddress, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress);
 

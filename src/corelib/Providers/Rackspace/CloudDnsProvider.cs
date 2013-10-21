@@ -480,12 +480,6 @@
         }
 
         /// <inheritdoc/>
-        public Task UpdateDomainsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc/>
         public Task<DnsJob> RemoveDomainsAsync(IEnumerable<string> domainIds, bool deleteSubdomains, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             UriTemplate template = new UriTemplate("/domains?deleteSubdomains={deleteSubdomains}");
@@ -691,12 +685,6 @@
         }
 
         /// <inheritdoc/>
-        public Task UpdateRecordsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc/>
         public Task<DnsJob> RemoveRecordsAsync(string domainId, IEnumerable<string> recordIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<DnsJob> progress)
         {
             UriTemplate template = new UriTemplate("/domains/{domainId}/records");
@@ -853,12 +841,6 @@
                 .ContinueWith(prepareRequest).Unwrap()
                 .ContinueWith(requestResource).Unwrap()
                 .ContinueWith(resultSelector);
-        }
-
-        /// <inheritdoc/>
-        public Task UpdatePtrRecordsAsync()
-        {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
