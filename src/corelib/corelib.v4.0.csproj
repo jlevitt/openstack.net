@@ -118,7 +118,9 @@
     <Compile Include="Core\Synchronous\QueueingServiceExtensions.cs" />
     <Compile Include="Core\Validators\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\CloudDnsProvider.cs" />
+    <Compile Include="Providers\Rackspace\CloudLoadBalancerProvider.cs" />
     <Compile Include="Providers\Rackspace\CloudQueuesProvider.cs" />
+    <Compile Include="Providers\Rackspace\Objects\ConnectionThrottles.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsChange.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsDomainChange.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsDomainChanges.cs" />
@@ -185,11 +187,16 @@
     <Compile Include="Core\Exceptions\ServerEnteredErrorStateException.cs" />
     <Compile Include="Providers\Rackspace\Exceptions\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\IDnsService.cs" />
+    <Compile Include="Providers\Rackspace\ILoadBalancerService.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingAlgorithmsResponse.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingProtocolsResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomain.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomainConfiguration.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomainsList.cs" />
     <Compile Include="Providers\Rackspace\Objects\ExportedDomain.cs" />
     <Compile Include="Providers\Rackspace\Objects\LimitType.cs" />
+    <Compile Include="Providers\Rackspace\Objects\LoadBalancingProtocol.cs" />
+    <Compile Include="Providers\Rackspace\Objects\LoadBalancingAlgorithm.cs" />
     <Compile Include="Providers\Rackspace\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\Objects\BulkDeletionFailedObject.cs" />
     <Compile Include="Providers\Rackspace\Objects\BulkDeletionResults.cs" />
