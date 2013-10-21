@@ -322,7 +322,7 @@
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Id));
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.AccountId));
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Contents));
-                Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.ContentType));
+                Assert.IsNotNull(exportedDomain.Response.ContentType);
 
                 DnsJob deleteResponse = await provider.RemoveDomainsAsync(domainsToRemove, false, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (deleteResponse.Status == DnsJobStatus.Error)
