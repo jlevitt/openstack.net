@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -319,6 +320,13 @@
 
                 Assert.AreEqual(DnsJobStatus.Completed, exportedDomain.Status);
                 Assert.IsNotNull(exportedDomain.Response);
+
+                Console.WriteLine("Exported domain:");
+                Console.WriteLine(JsonConvert.SerializeObject(exportedDomain.Response, Formatting.Indented));
+                Console.WriteLine();
+                Console.WriteLine("Formatted exported output:");
+                Console.WriteLine(exportedDomain.Response.Contents);
+
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Id));
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.AccountId));
                 Assert.IsFalse(string.IsNullOrEmpty(exportedDomain.Response.Contents));
@@ -335,7 +343,7 @@
 
                 SerializedDomain serializedDomain =
                     new SerializedDomain(
-                        exportedDomain.Response.Contents,
+                        RemoveDefaultNameserverEntries(exportedDomain.Response.Contents),
                         exportedDomain.Response.ContentType);
                 DnsJob<DnsDomains> importedDomain = await provider.ImportDomainAsync(new[] { serializedDomain }, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
                 if (importedDomain.Status == DnsJobStatus.Error)
@@ -356,6 +364,19 @@
                     Assert.Fail("Failed to delete temporary domain created during the integration test.");
                 }
             }
+        }
+
+        /// <summary>
+        /// This method removes the default NS entries from an exported domain in BIND 9 format.
+        /// Attempting to import a domain containing these entries results in an error due to
+        /// conflicting DNS entries.
+        /// </summary>
+        /// <param name="bind9Content">The exported DNS domain in BIND 9 format, which may contain default NS records.</param>
+        /// <returns>The serialized domain with the default NS records removed.</returns>
+        private static string RemoveDefaultNameserverEntries(string bind9Content)
+        {
+            Regex expression = new Regex(@"\n.*\tNS\tdns[12]\.stabletransit\.com.*");
+            return expression.Replace(bind9Content, string.Empty);
         }
 
         [TestMethod]
