@@ -3,8 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Net;
     using net.openstack.Providers.Rackspace;
     using net.openstack.Providers.Rackspace.Objects;
+    using Newtonsoft.Json;
     using CancellationToken = System.Threading.CancellationToken;
 
     /// <summary>

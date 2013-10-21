@@ -16,6 +16,7 @@
     using Newtonsoft.Json.Linq;
     using CancellationToken = System.Threading.CancellationToken;
     using JsonRequestSettings = JSIStudios.SimpleRESTServices.Client.Json.JsonRequestSettings;
+    using JsonRestServices = JSIStudios.SimpleRESTServices.Client.Json.JsonRestServices;
     using Stream = System.IO.Stream;
     using StreamReader = System.IO.StreamReader;
     using Thread = System.Threading.Thread;
