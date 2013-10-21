@@ -232,6 +232,7 @@
         /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/create_domains.html">Create Domain(s) (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
         /// <threadsafety static="true" instance="false"/>
         /// <preliminary/>
+        [JsonObject(MemberSerialization.OptIn)]
         protected class RecordsList
         {
             /// <summary>
@@ -283,6 +284,7 @@
         /// <seealso href="http://docs.rackspace.com/cdns/api/v1.0/cdns-devguide/content/create_domains.html">Create Domain(s) (Rackspace Cloud DNS Developer Guide - API v1.0)</seealso>
         /// <threadsafety static="true" instance="false"/>
         /// <preliminary/>
+        [JsonObject(MemberSerialization.OptIn)]
         protected class SubdomainsList
         {
             /// <summary>
