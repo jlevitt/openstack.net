@@ -123,13 +123,56 @@
         /// <inheritdoc/>
         public Task<bool> GetConnectionLoggingAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/connectionlogging");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerConnectionLoggingResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerConnectionLoggingResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerConnectionLoggingResponse>, bool> resultSelector =
+                task => task.Result != null ? task.Result.Enabled ?? false : false;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task SetConnectionLoggingAsync(string loadBalancerId, bool enabled, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/connectionlogging");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            SetLoadBalancerConnectionLoggingRequest request = new SetLoadBalancerConnectionLoggingRequest(enabled);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters, request);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>
