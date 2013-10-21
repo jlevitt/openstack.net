@@ -348,8 +348,8 @@
         /// <returns>
         /// A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully,
         /// the <see cref="Task{TResult}.Result"/> property will return a tuple of the resulting collection of
-        /// <see cref="DnsRecord"/> objects and the total number of domains in the list. If the total number of
-        /// subdomains in the list is not available, the second element of the tuple will be <c>null</c>.
+        /// <see cref="DnsRecord"/> objects and the total number of records in the list. If the total number of
+        /// records in the list is not available, the second element of the tuple will be <c>null</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="domainId"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="domainId"/> is empty.</exception>
