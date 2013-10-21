@@ -8,6 +8,60 @@
 
     public interface ILoadBalancerService
     {
+        #region Error Page
+
+        /// <summary>
+        /// Gets the HTML content of the page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain the HTML content
+        /// of the error page which is shown to an end user who is attempting to access a load balancer
+        /// node that is offline or unavailable.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Errorpage-d1e2218.html">Error Page Operations (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<string> GetErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the HTML content of the custom error page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="content">The HTML content of the error page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="content"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="content"/> is empty.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Errorpage-d1e2218.html">Error Page Operations (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task SetErrorPageAsync(string loadBalancerId, string content, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the custom error page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Errorpage-d1e2218.html">Error Page Operations (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        #endregion Error Page
+
         #region Sessions
 
         /// <summary>

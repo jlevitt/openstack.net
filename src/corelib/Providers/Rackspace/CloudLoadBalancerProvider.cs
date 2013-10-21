@@ -44,6 +44,90 @@
         #region ILoadBalancerService Members
 
         /// <inheritdoc/>
+        public Task<string> GetErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/errorpage");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerErrorPageResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerErrorPageResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerErrorPageResponse>, string> resultSelector =
+                task => task.Result != null ? task.Result.Content : null;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task SetErrorPageAsync(string loadBalancerId, string content, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (content == null)
+                throw new ArgumentNullException("content");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(content))
+                throw new ArgumentException("content cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/errorpage");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            SetLoadBalancerErrorPageRequest requestBody = new SetLoadBalancerErrorPageRequest(content);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/errorpage");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap();
+        }
+
+        /// <inheritdoc/>
         public Task<SessionPersistence> GetSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
             if (loadBalancerId == null)
