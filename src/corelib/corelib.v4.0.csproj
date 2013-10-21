@@ -189,6 +189,10 @@
     <Compile Include="Providers\Rackspace\IDnsService.cs" />
     <Compile Include="Providers\Rackspace\ILoadBalancerService.cs" />
     <Compile Include="Providers\Rackspace\Objects\LoadBalancerMetadataItem.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Request\AddLoadBalancerMetadataRequest.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Request\UpdateLoadBalancerMetadataItemRequest.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\GetLoadBalancerMetadataItemResponse.cs" />
+    <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancerMetadataResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingAlgorithmsResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\Response\ListLoadBalancingProtocolsResponse.cs" />
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomain.cs" />

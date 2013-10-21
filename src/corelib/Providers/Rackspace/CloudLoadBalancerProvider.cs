@@ -11,6 +11,7 @@
     using net.openstack.Core.Domain;
     using net.openstack.Core.Providers;
     using net.openstack.Providers.Rackspace.Objects;
+    using net.openstack.Providers.Rackspace.Objects.Request;
     using net.openstack.Providers.Rackspace.Objects.Response;
     using net.openstack.Providers.Rackspace.Validators;
     using Newtonsoft.Json;
@@ -131,61 +132,464 @@
         /// <inheritdoc/>
         public Task<IEnumerable<LoadBalancerMetadataItem>> ListLoadBalancerMetadataAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancerMetadataResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancerMetadataResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancerMetadataResponse>, IEnumerable<LoadBalancerMetadataItem>> resultSelector =
+                task => (task.Result != null ? task.Result.Metadata : null) ?? Enumerable.Empty<LoadBalancerMetadataItem>();
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task<LoadBalancerMetadataItem> GetLoadBalancerMetadataItemAsync(string loadBalancerId, string metadataId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (metadataId == null)
+                throw new ArgumentNullException("metadataId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(metadataId))
+                throw new ArgumentException("metadataId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata/{metaId}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "metaId", metadataId },
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerMetadataItemResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerMetadataItemResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerMetadataItemResponse>, LoadBalancerMetadataItem> resultSelector =
+                task => task.Result != null ? task.Result.MetadataItem : null;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task<IEnumerable<LoadBalancerMetadataItem>> ListNodeMetadataAsync(string loadBalancerId, string nodeId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (nodeId == null)
+                throw new ArgumentNullException("nodeId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(nodeId))
+                throw new ArgumentException("nodeId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "nodeId", nodeId },
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancerMetadataResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancerMetadataResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancerMetadataResponse>, IEnumerable<LoadBalancerMetadataItem>> resultSelector =
+                task => (task.Result != null ? task.Result.Metadata : null) ?? Enumerable.Empty<LoadBalancerMetadataItem>();
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task<LoadBalancerMetadataItem> GetNodeMetadataItemAsync(string loadBalancerId, string nodeId, string metadataId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (nodeId == null)
+                throw new ArgumentNullException("nodeId");
+            if (metadataId == null)
+                throw new ArgumentNullException("metadataId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(nodeId))
+                throw new ArgumentException("nodeId cannot be empty");
+            if (string.IsNullOrEmpty(metadataId))
+                throw new ArgumentException("metadataId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata/{metaId}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "nodeId", nodeId },
+                { "metaId", metadataId },
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerMetadataItemResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerMetadataItemResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerMetadataItemResponse>, LoadBalancerMetadataItem> resultSelector =
+                task => task.Result != null ? task.Result.MetadataItem : null;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task<IEnumerable<LoadBalancerMetadataItem>> AddLoadBalancerMetadataAsync(string loadBalancerId, IEnumerable<KeyValuePair<string, string>> metadata, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (metadata == null)
+                throw new ArgumentNullException("metadata");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+            };
+
+            AddLoadBalancerMetadataRequest requestBody = new AddLoadBalancerMetadataRequest(metadata);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancerMetadataResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancerMetadataResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancerMetadataResponse>, IEnumerable<LoadBalancerMetadataItem>> resultSelector =
+                task => (task.Result != null ? task.Result.Metadata : null) ?? Enumerable.Empty<LoadBalancerMetadataItem>();
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task<IEnumerable<LoadBalancerMetadataItem>> AddNodeMetadataAsync(string loadBalancerId, string nodeId, IEnumerable<KeyValuePair<string, string>> metadata, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (nodeId == null)
+                throw new ArgumentNullException("nodeId");
+            if (metadata == null)
+                throw new ArgumentNullException("metadata");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(nodeId))
+                throw new ArgumentException("nodeId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "nodeId", nodeId },
+            };
+
+            AddLoadBalancerMetadataRequest requestBody = new AddLoadBalancerMetadataRequest(metadata);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancerMetadataResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancerMetadataResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancerMetadataResponse>, IEnumerable<LoadBalancerMetadataItem>> resultSelector =
+                task => (task.Result != null ? task.Result.Metadata : null) ?? Enumerable.Empty<LoadBalancerMetadataItem>();
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
         public Task UpdateLoadBalancerMetadataItemAsync(string loadBalancerId, string metadataId, string value, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (metadataId == null)
+                throw new ArgumentNullException("metadataId");
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(metadataId))
+                throw new ArgumentException("metadataId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata/{metaId}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "metaId", metadataId }
+            };
+
+            UpdateLoadBalancerMetadataItemRequest requestBody = new UpdateLoadBalancerMetadataItemRequest(value);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>
         public Task UpdateNodeMetadataItemAsync(string loadBalancerId, string nodeId, string metadataId, string value, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (nodeId == null)
+                throw new ArgumentNullException("nodeId");
+            if (metadataId == null)
+                throw new ArgumentNullException("metadataId");
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(nodeId))
+                throw new ArgumentException("nodeId cannot be empty");
+            if (string.IsNullOrEmpty(metadataId))
+                throw new ArgumentException("metadataId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata/{metaId}");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId },
+                { "nodeId", nodeId },
+                { "metaId", metadataId }
+            };
+
+            UpdateLoadBalancerMetadataItemRequest requestBody = new UpdateLoadBalancerMetadataItemRequest(value);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.PUT, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap();
         }
 
         /// <inheritdoc/>
         public Task RemoveLoadBalancerMetadataItemAsync(string loadBalancerId, IEnumerable<string> metadataIds, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (metadataIds == null)
+                throw new ArgumentNullException("metadataIds");
+
+            return RemoveLoadBalancerMetadataItemAsync(loadBalancerId, metadataIds.ToArray(), cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes one or more metadata items associated with a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="metadataIds">The metadata item IDs. These are obtained from <see cref="LoadBalancerMetadataItem.Id">LoadBalancerMetadataItem.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="metadataIds"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="metadataIds"/> contains any <c>null</c> or empty values.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Metadata-d1e2675.html">Remove Metadata (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        public Task RemoveLoadBalancerMetadataItemAsync(string loadBalancerId, string[] metadataIds, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (metadataIds == null)
+                throw new ArgumentNullException("metadataIds");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (metadataIds.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("metadataIds cannot contain any null or empty values", "metadataIds");
+
+            if (metadataIds.Length == 0)
+            {
+                return CompletedTask.Default;
+            }
+            else if (metadataIds.Length == 1)
+            {
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata/{metaId}");
+                var parameters = new Dictionary<string, string>()
+                {
+                    { "loadBalancerId", loadBalancerId },
+                    { "metaId", metadataIds[0] }
+                };
+
+                Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+                Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                    GetResponseAsyncFunc(cancellationToken);
+
+                return AuthenticateServiceAsync(cancellationToken)
+                    .ContinueWith(prepareRequest)
+                    .ContinueWith(requestResource).Unwrap();
+            }
+            else
+            {
+                List<string> queryString = new List<string>();
+                for (int i = 0; i < metadataIds.Length; i++)
+                    queryString.Add(string.Format("id={{id{0}}}", i));
+
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata&" + string.Join("&", queryString));
+                var parameters = new Dictionary<string, string>()
+                {
+                    { "loadBalancerId", loadBalancerId },
+                };
+                for (int i = 0; i < metadataIds.Length; i++)
+                    parameters.Add("id" + i, metadataIds[i]);
+
+                Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+                Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                    GetResponseAsyncFunc(cancellationToken);
+
+                return AuthenticateServiceAsync(cancellationToken)
+                    .ContinueWith(prepareRequest)
+                    .ContinueWith(requestResource).Unwrap();
+            }
         }
 
         /// <inheritdoc/>
         public Task RemoveNodeMetadataItemAsync(string loadBalancerId, string nodeId, IEnumerable<string> metadataIds, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (metadataIds == null)
+                throw new ArgumentNullException("metadataIds");
+
+            return RemoveNodeMetadataItemAsync(loadBalancerId, nodeId, metadataIds.ToArray(), cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes one or more metadata items associated with a load balancer node.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeId">The load balancer node ID. This is obtained from <see cref="Node.Id">Node.Id</see>.</param>
+        /// <param name="metadataIds">The metadata item IDs. These are obtained from <see cref="LoadBalancerMetadataItem.Id">LoadBalancerMetadataItem.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is <c>null</c>.</para>
+        /// <para>-or-</para>
+        /// <para>If <paramref name="metadataIds"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is empty.</para>
+        /// <para>-or-</para>
+        /// <para>If <paramref name="metadataIds"/> contains any <c>null</c> or empty values.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Metadata-d1e2675.html">Remove Metadata (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        public Task RemoveNodeMetadataItemAsync(string loadBalancerId, string nodeId, string[] metadataIds, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (nodeId == null)
+                throw new ArgumentNullException("nodeId");
+            if (metadataIds == null)
+                throw new ArgumentNullException("metadataIds");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+            if (string.IsNullOrEmpty(nodeId))
+                throw new ArgumentException("nodeId cannot be empty");
+            if (metadataIds.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("metadataIds cannot contain any null or empty values", "metadataIds");
+
+            if (metadataIds.Length == 0)
+            {
+                return CompletedTask.Default;
+            }
+            else if (metadataIds.Length == 1)
+            {
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata/{metaId}");
+                var parameters = new Dictionary<string, string>()
+                {
+                    { "loadBalancerId", loadBalancerId },
+                    { "nodeId", nodeId },
+                    { "metaId", metadataIds[0] }
+                };
+
+                Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+                Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                    GetResponseAsyncFunc(cancellationToken);
+
+                return AuthenticateServiceAsync(cancellationToken)
+                    .ContinueWith(prepareRequest)
+                    .ContinueWith(requestResource).Unwrap();
+            }
+            else
+            {
+                List<string> queryString = new List<string>();
+                for (int i = 0; i < metadataIds.Length; i++)
+                    queryString.Add(string.Format("id={{id{0}}}", i));
+
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata&" + string.Join("&", queryString));
+                var parameters = new Dictionary<string, string>()
+                {
+                    { "loadBalancerId", loadBalancerId },
+                    { "nodeId", nodeId }
+                };
+                for (int i = 0; i < metadataIds.Length; i++)
+                    parameters.Add("id" + i, metadataIds[i]);
+
+                Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+                Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                    GetResponseAsyncFunc(cancellationToken);
+
+                return AuthenticateServiceAsync(cancellationToken)
+                    .ContinueWith(prepareRequest)
+                    .ContinueWith(requestResource).Unwrap();
+            }
         }
 
         #endregion
