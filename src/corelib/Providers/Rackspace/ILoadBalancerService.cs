@@ -66,6 +66,25 @@
 
         #endregion Error Page
 
+        #region Load Balancer Statistics
+
+        /// <summary>
+        /// Get detailed statistics for a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a
+        /// <see cref="LoadBalancerStatistics"/> object containing the detailed statistics for the
+        /// load balancer.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Load_Balancer_Stats-d1e1524.html">List Load Balancer Stats (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<LoadBalancerStatistics> GetStatisticsAsync(string loadBalancerId, CancellationToken cancellationToken);
+
         #region Allowed Domains
 
         /// <summary>

@@ -208,6 +208,7 @@
     <Compile Include="Providers\Rackspace\Objects\DnsSubdomainsList.cs" />
     <Compile Include="Providers\Rackspace\Objects\ExportedDomain.cs" />
     <Compile Include="Providers\Rackspace\Objects\LimitType.cs" />
+    <Compile Include="Providers\Rackspace\Objects\LoadBalancerStatistics.cs" />
     <Compile Include="Providers\Rackspace\Objects\LoadBalancingProtocol.cs" />
     <Compile Include="Providers\Rackspace\Objects\LoadBalancingAlgorithm.cs" />
     <Compile Include="Providers\Rackspace\NamespaceDoc.cs" />

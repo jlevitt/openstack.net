@@ -151,6 +151,31 @@
         }
 
         /// <inheritdoc/>
+        public Task<LoadBalancerStatistics> GetStatisticsAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/stats");
+            var parameters = new Dictionary<string, string>()
+            {
+                { "loadBalancerId", loadBalancerId }
+            };
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<LoadBalancerStatistics>> requestResource =
+                GetResponseAsyncFunc<LoadBalancerStatistics>(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap();
+        }
+
+        /// <inheritdoc/>
         public Task<IEnumerable<string>> ListAllowedDomainsAsync(CancellationToken cancellationToken)
         {
             UriTemplate template = new UriTemplate("/loadbalancers/alloweddomains");
