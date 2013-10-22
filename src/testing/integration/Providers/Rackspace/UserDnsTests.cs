@@ -168,7 +168,7 @@
             string domainName = CreateRandomDomainName();
 
             IDnsService provider = CreateProvider();
-            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(30))))
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
             {
                 DnsConfiguration configuration = new DnsConfiguration(
                     new DnsDomainConfiguration(
@@ -228,7 +228,7 @@
             string clonedName = CreateRandomDomainName();
 
             IDnsService provider = CreateProvider();
-            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(30))))
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
             {
                 List<string> domainsToRemove = new List<string>();
 
@@ -388,7 +388,7 @@
             string subdomainName = "www";
 
             IDnsService provider = CreateProvider();
-            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(30))))
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
             {
                 DnsConfiguration configuration = new DnsConfiguration(
                     new DnsDomainConfiguration(
@@ -461,7 +461,7 @@
             string domainName = CreateRandomDomainName();
 
             IDnsService provider = CreateProvider();
-            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(600))))
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60))))
             {
                 DnsConfiguration configuration = new DnsConfiguration(
                     new DnsDomainConfiguration(
