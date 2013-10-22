@@ -51,7 +51,7 @@
         public void CleanupTestQueues()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(60)));
             string queueName = CreateRandomQueueName();
 
             IEnumerable<Task<IEnumerable<CloudQueue>>> allQueueTasks = ListAllQueuesAsync(provider, null, false, cancellationTokenSource.Token);
@@ -70,7 +70,7 @@
         public async Task TestGetHome()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             HomeDocument document = await provider.GetHomeAsync(cancellationTokenSource.Token);
             Assert.IsNotNull(document);
             Console.WriteLine(JsonConvert.SerializeObject(document, Formatting.Indented));
@@ -82,7 +82,7 @@
         public async Task TestGetNodeHealth()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             await provider.GetNodeHealthAsync(cancellationTokenSource.Token);
         }
 
@@ -92,7 +92,7 @@
         public async Task TestCreateQueue()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             bool created = await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -110,7 +110,7 @@
         public async Task TestListQueues()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -130,7 +130,7 @@
         public async Task TestQueueExists()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -145,7 +145,7 @@
         public async Task TestQueueMetadataStatic()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -168,7 +168,7 @@
         public async Task TestQueueMetadataDynamic()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -215,7 +215,7 @@
         public async Task TestQueueStatistics()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -271,7 +271,7 @@
             string[] responseQueueNames = Enumerable.Range(0, clientCount).Select(i => CreateRandomQueueName()).ToArray();
 
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource testCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(300));
+            CancellationTokenSource testCancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(300)));
 
             Stopwatch initializationTimer = Stopwatch.StartNew();
             Console.WriteLine("Creating request queue...");
@@ -556,7 +556,7 @@
         public async Task TestQueueClaims()
         {
             IQueueingService provider = CreateProvider();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TestTimeout(TimeSpan.FromSeconds(10)));
             string queueName = CreateRandomQueueName();
 
             await provider.CreateQueueAsync(queueName, cancellationTokenSource.Token);
@@ -633,6 +633,14 @@
                     });
                 });
             } while (lastQueue != null);
+        }
+
+        private TimeSpan TestTimeout(TimeSpan timeout)
+        {
+            if (Debugger.IsAttached)
+                return TimeSpan.FromDays(1);
+
+            return timeout;
         }
 
         /// <summary>
