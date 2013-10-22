@@ -32,7 +32,9 @@
         /// </summary>
         /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
         /// <param name="content">The HTML content of the error page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.</param>
+        /// <param name="completionOption">Specifies when the <see cref="Task"/> representing the asynchronous server operation should be considered complete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <param name="progress">An optional callback object to receive progress notifications, if <paramref name="completionOption"/> is <see cref="DnsCompletionOption.RequestCompleted"/>. If this is <c>null</c>, no progress notifications are sent.</param>
         /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="loadBalancerId"/> is <c>null</c>.
@@ -46,19 +48,21 @@
         /// </exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Errorpage-d1e2218.html">Error Page Operations (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task SetErrorPageAsync(string loadBalancerId, string content, CancellationToken cancellationToken);
+        Task SetErrorPageAsync(string loadBalancerId, string content, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         /// <summary>
         /// Removes the custom error page which is shown to an end user who is attempting to access a load balancer node that is offline or unavailable.
         /// </summary>
         /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="completionOption">Specifies when the <see cref="Task"/> representing the asynchronous server operation should be considered complete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <param name="progress">An optional callback object to receive progress notifications, if <paramref name="completionOption"/> is <see cref="DnsCompletionOption.RequestCompleted"/>. If this is <c>null</c>, no progress notifications are sent.</param>
         /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Errorpage-d1e2218.html">Error Page Operations (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task RemoveErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken);
+        Task RemoveErrorPageAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         #endregion Error Page
 

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Net;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using JSIStudios.SimpleRESTServices.Client;
     using net.openstack.Core;
@@ -73,7 +74,7 @@
         }
 
         /// <inheritdoc/>
-        public Task SetErrorPageAsync(string loadBalancerId, string content, CancellationToken cancellationToken)
+        public Task SetErrorPageAsync(string loadBalancerId, string content, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -97,13 +98,24 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
+            Func<Task<string>, string> resultSelector =
+                task =>
+                {
+                    task.PropagateExceptions();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        WaitForLoadBalancerToLeaveStateAsync(loadBalancerId, LoadBalancerStatus.PendingUpdate, cancellationToken, progress).Wait(cancellationToken);
+
+                    return task.Result;
+                };
+
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest).Unwrap()
-                .ContinueWith(requestResource).Unwrap();
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
-        public Task RemoveErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken)
+        public Task RemoveErrorPageAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -122,9 +134,20 @@
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
 
+            Func<Task<string>, string> resultSelector =
+                task =>
+                {
+                    task.PropagateExceptions();
+                    if (completionOption == DnsCompletionOption.RequestCompleted)
+                        WaitForLoadBalancerToLeaveStateAsync(loadBalancerId, LoadBalancerStatus.PendingUpdate, cancellationToken, progress).Wait(cancellationToken);
+
+                    return task.Result;
+                };
+
             return AuthenticateServiceAsync(cancellationToken)
                 .ContinueWith(prepareRequest)
-                .ContinueWith(requestResource).Unwrap();
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
         }
 
         /// <inheritdoc/>
@@ -923,6 +946,36 @@
         }
 
         #endregion
+
+        protected Task<LoadBalancer> WaitForLoadBalancerToLeaveStateAsync(string loadBalancerId, LoadBalancerStatus state, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            Func<LoadBalancer> func =
+                () =>
+                {
+                    while (true)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        LoadBalancer updatedLoadBalancer = GetLoadBalancerAsync(loadBalancerId, cancellationToken).Result;
+                        if (updatedLoadBalancer == null || updatedLoadBalancer.Id != loadBalancerId)
+                            throw new InvalidOperationException("Could not obtain status for load balancer.");
+
+                        if (progress != null)
+                            progress.Report(updatedLoadBalancer);
+
+                        if (updatedLoadBalancer.Status != state)
+                            return updatedLoadBalancer;
+
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                };
+
+            return Task.Factory.StartNew(func);
+        }
 
         private Task<Uri> GetBaseUriAsync(CancellationToken cancellationToken)
         {
