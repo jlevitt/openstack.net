@@ -188,6 +188,7 @@
     <Compile Include="Providers\Rackspace\Exceptions\NamespaceDoc.cs" />
     <Compile Include="Providers\Rackspace\IDnsService.cs" />
     <Compile Include="Providers\Rackspace\ILoadBalancerService.cs" />
+    <Compile Include="Providers\Rackspace\Objects\LoadBalancerEnabledFlag.cs" />
     <Compile Include="Providers\Rackspace\Objects\LoadBalancerMetadataItem.cs" />
     <Compile Include="Providers\Rackspace\Objects\Request\AddLoadBalancerMetadataRequest.cs" />
     <Compile Include="Providers\Rackspace\Objects\Request\SetLoadBalancerConnectionLoggingRequest.cs" />

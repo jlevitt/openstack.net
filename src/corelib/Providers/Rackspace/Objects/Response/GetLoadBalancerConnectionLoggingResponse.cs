@@ -6,7 +6,7 @@
     internal class GetLoadBalancerConnectionLoggingResponse
     {
         [JsonProperty("connectionLogging")]
-        private ConnectionLoggingBody _body;
+        private LoadBalancerEnabledFlag _body;
 
         [JsonConstructor]
         protected GetLoadBalancerConnectionLoggingResponse()
@@ -15,7 +15,7 @@
 
         protected GetLoadBalancerConnectionLoggingResponse(bool enabled)
         {
-            _body = new ConnectionLoggingBody(enabled);
+            _body = new LoadBalancerEnabledFlag(enabled);
         }
 
         public bool? Enabled
@@ -26,31 +26,6 @@
                     return null;
 
                 return _body.Enabled;
-            }
-        }
-
-        [JsonObject(MemberSerialization.OptIn)]
-        protected class ConnectionLoggingBody
-        {
-            [JsonProperty("enabled")]
-            private bool? _enabled;
-
-            [JsonConstructor]
-            protected ConnectionLoggingBody()
-            {
-            }
-
-            public ConnectionLoggingBody(bool enabled)
-            {
-                _enabled = enabled;
-            }
-
-            public bool? Enabled
-            {
-                get
-                {
-                    return _enabled;
-                }
             }
         }
     }

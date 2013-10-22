@@ -6,7 +6,7 @@
     internal class GetLoadBalancerContentCachingResponse
     {
         [JsonProperty("contentCaching")]
-        private ContentCachingBody _body;
+        private LoadBalancerEnabledFlag _body;
 
         [JsonConstructor]
         protected GetLoadBalancerContentCachingResponse()
@@ -15,7 +15,7 @@
 
         protected GetLoadBalancerContentCachingResponse(bool enabled)
         {
-            _body = new ContentCachingBody(enabled);
+            _body = new LoadBalancerEnabledFlag(enabled);
         }
 
         public bool? Enabled
@@ -26,31 +26,6 @@
                     return null;
 
                 return _body.Enabled;
-            }
-        }
-
-        [JsonObject(MemberSerialization.OptIn)]
-        protected class ContentCachingBody
-        {
-            [JsonProperty("enabled")]
-            private bool? _enabled;
-
-            [JsonConstructor]
-            protected ContentCachingBody()
-            {
-            }
-
-            public ContentCachingBody(bool enabled)
-            {
-                _enabled = enabled;
-            }
-
-            public bool? Enabled
-            {
-                get
-                {
-                    return _enabled;
-                }
             }
         }
     }
