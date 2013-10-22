@@ -429,8 +429,11 @@
                     { "ids", string.Join(",", messageIds.ToArray()) },
                 };
 
+            Func<Uri, Uri> uriTransform =
+                uri => new Uri(uri.GetLeftPart(UriPartial.Path) + uri.Query.Replace("%2c", ","));
+
             Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
-                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters, uriTransform);
 
             Func<Task<HttpWebRequest>, Task<IEnumerable<QueuedMessage>>> requestResource =
                 GetResponseAsyncFunc<IEnumerable<QueuedMessage>>(cancellationToken);
@@ -583,8 +586,11 @@
                     { "ids", string.Join(",", messageIds.ToArray()) },
                 };
 
+            Func<Uri, Uri> uriTransform =
+                uri => new Uri(uri.GetLeftPart(UriPartial.Path) + uri.Query.Replace("%2c", ","));
+
             Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
-                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, uriTransform);
 
             Func<Task<HttpWebRequest>, Task<string>> requestResource =
                 GetResponseAsyncFunc(cancellationToken);
