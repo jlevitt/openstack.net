@@ -128,6 +128,26 @@
         }
 
         /// <inheritdoc/>
+        public Task<IEnumerable<string>> ListAllowedDomainsAsync(CancellationToken cancellationToken)
+        {
+            UriTemplate template = new UriTemplate("/loadbalancers/alloweddomains");
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<ListAllowedDomainsResponse>> requestResource =
+                GetResponseAsyncFunc<ListAllowedDomainsResponse>(cancellationToken);
+
+            Func<Task<ListAllowedDomainsResponse>, IEnumerable<string>> resultSelector =
+                task => task.Result.AllowedDomains;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
         public Task<SessionPersistence> GetSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken)
         {
             if (loadBalancerId == null)

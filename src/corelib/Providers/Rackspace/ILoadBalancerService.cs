@@ -62,6 +62,23 @@
 
         #endregion Error Page
 
+        #region Allowed Domains
+
+        /// <summary>
+        /// Gets the domain name restrictions in place for adding load balancer nodes.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a collection of
+        /// strings containing the allowed domain names used for adding load balancer nodes.
+        /// </returns>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Node-Events-d1e264.html">View Node Service Events (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<IEnumerable<string>> ListAllowedDomainsAsync(CancellationToken cancellationToken);
+
+        #endregion Allowed Domains
+
         #region Sessions
 
         /// <summary>
