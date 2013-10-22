@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
+using System.Threading.Tasks;
 using JSIStudios.SimpleRESTServices.Client;
 using JSIStudios.SimpleRESTServices.Client.Json;
 using net.openstack.Core;
@@ -15,6 +17,8 @@ using net.openstack.Providers.Rackspace.Objects;
 using net.openstack.Providers.Rackspace.Validators;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using CancellationToken = System.Threading.CancellationToken;
+using Encoding = System.Text.Encoding;
 
 namespace net.openstack.Providers.Rackspace
 {
@@ -791,6 +795,206 @@ namespace net.openstack.Providers.Rackspace
         {
             if (GetDefaultIdentity(identity) == null)
                 throw new InvalidOperationException("No identity was specified for the request, and no default is available for the provider.");
+        }
+
+        protected Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> PrepareRequestAsyncFunc(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters, Func<Uri, Uri> uriTransform = null)
+        {
+            return
+                task =>
+                {
+                    Uri baseUri = task.Result.Item2;
+                    return PrepareRequestImpl(method, task.Result.Item1, template, baseUri, parameters, uriTransform);
+                };
+        }
+
+        protected Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> PrepareRequestAsyncFunc<TBody>(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters, TBody body, Func<Uri, Uri> uriTransform = null)
+        {
+            return
+                task =>
+                {
+                    Uri baseUri = task.Result.Item2;
+                    HttpWebRequest request = PrepareRequestImpl(method, task.Result.Item1, template, baseUri, parameters, uriTransform);
+
+                    string bodyText = JsonConvert.SerializeObject(body);
+                    byte[] encodedBody = Encoding.UTF8.GetBytes(bodyText);
+                    request.ContentType = new ContentType() { MediaType = JsonRequestSettings.JsonContentType, CharSet = "UTF-8" }.ToString();
+                    request.ContentLength = encodedBody.Length;
+
+                    Task<Stream> streamTask = Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream(null, null), request.EndGetRequestStream);
+                    return
+                        streamTask.ContinueWith(subTask =>
+                        {
+                            using (Stream stream = subTask.Result)
+                            {
+                                stream.Write(encodedBody, 0, encodedBody.Length);
+                            }
+
+                            return request;
+                        });
+                };
+        }
+
+        protected virtual HttpWebRequest PrepareRequestImpl(HttpMethod method, IdentityToken identityToken, UriTemplate template, Uri baseUri, IDictionary<string, string> parameters, Func<Uri, Uri> uriTransform)
+        {
+            Uri boundUri = template.BindByName(baseUri, parameters);
+            if (uriTransform != null)
+                boundUri = uriTransform(boundUri);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(boundUri);
+            request.Method = method.ToString().ToUpperInvariant();
+            request.Accept = JsonRequestSettings.JsonContentType;
+            request.Headers["X-Auth-Token"] = identityToken.Id;
+            request.UserAgent = UserAgentGenerator.UserAgent;
+            request.Timeout = (int)TimeSpan.FromSeconds(14400).TotalMilliseconds;
+            if (ConnectionLimit.HasValue)
+                request.ServicePoint.ConnectionLimit = ConnectionLimit.Value;
+
+            return request;
+        }
+
+        protected virtual Task<Uri> GetBaseUriAsync(CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected virtual Task<Tuple<IdentityToken, Uri>> AuthenticateServiceAsync(CancellationToken cancellationToken)
+        {
+            Task<IdentityToken> authenticate;
+            IIdentityService identityService = IdentityProvider as IIdentityService;
+            if (identityService != null)
+                authenticate = identityService.GetTokenAsync(GetDefaultIdentity(null));
+            else
+                authenticate = Task.Factory.StartNew(() => IdentityProvider.GetToken(GetDefaultIdentity(null)));
+
+            Func<Task<IdentityToken>, Task<Tuple<IdentityToken, Uri>>> getBaseUri =
+                task =>
+                {
+                    Task[] tasks = { task, GetBaseUriAsync(cancellationToken) };
+                    return Task.Factory.ContinueWhenAll(tasks,
+                        ts =>
+                        {
+                            Task<IdentityToken> first = (Task<IdentityToken>)ts[0];
+                            Task<Uri> second = (Task<Uri>)ts[1];
+                            return Tuple.Create(first.Result, second.Result);
+                        });
+                };
+
+            return authenticate.ContinueWith(getBaseUri).Unwrap();
+        }
+
+        protected virtual Func<Task<HttpWebRequest>, Task<string>> GetResponseAsyncFunc(CancellationToken cancellationToken)
+        {
+            Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
+                task =>
+                {
+                    return task.Result.GetResponseAsync(cancellationToken);
+                };
+            Func<Task<WebResponse>, string> readResult =
+                task =>
+                {
+                    HttpWebResponse response;
+                    if (task.IsFaulted)
+                    {
+                        WebException webException = task.Exception.Flatten().InnerException as WebException;
+                        if (webException == null)
+                            task.PropagateExceptions();
+
+                        response = webException.Response as HttpWebResponse;
+                        if (response == null)
+                            task.PropagateExceptions();
+                    }
+                    else
+                    {
+                        response = (HttpWebResponse)task.Result;
+                    }
+
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string body = reader.ReadToEnd();
+                        if (task.IsFaulted)
+                        {
+                            if (!string.IsNullOrEmpty(body))
+                                throw new WebException(body, task.Exception);
+
+                            task.PropagateExceptions();
+                        }
+
+                        return body;
+                    }
+                };
+
+            Func<Task<HttpWebRequest>, Task<string>> result =
+                task =>
+                {
+                    return task.ContinueWith(requestResource).Unwrap()
+                        .ContinueWith(readResult);
+                };
+
+            return result;
+        }
+
+        protected virtual Func<Task<HttpWebRequest>, Task<T>> GetResponseAsyncFunc<T>(CancellationToken cancellationToken, Func<Task<Tuple<HttpWebResponse, string>>, Task<T>> parseResult = null)
+        {
+            Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
+                task =>
+                {
+                    return task.Result.GetResponseAsync(cancellationToken);
+                };
+            Func<Task<WebResponse>, Tuple<HttpWebResponse, string>> readResult =
+                task =>
+                {
+                    HttpWebResponse response;
+                    if (task.IsFaulted)
+                    {
+                        WebException webException = task.Exception.Flatten().InnerException as WebException;
+                        if (webException == null)
+                            task.PropagateExceptions();
+
+                        response = webException.Response as HttpWebResponse;
+                        if (response == null)
+                            task.PropagateExceptions();
+                    }
+                    else
+                    {
+                        response = (HttpWebResponse)task.Result;
+                    }
+
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string body = reader.ReadToEnd();
+                        if (task.IsFaulted)
+                        {
+                            if (!string.IsNullOrEmpty(body))
+                                throw new WebException(body, task.Exception);
+
+                            task.PropagateExceptions();
+                        }
+
+                        return Tuple.Create(response, body);
+                    }
+                };
+            if (parseResult == null)
+            {
+                parseResult =
+                    task =>
+                    {
+#if NET35
+                        return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(task.Result.Item2));
+#else
+                        return JsonConvert.DeserializeObjectAsync<T>(task.Result.Item2);
+#endif
+                    };
+            }
+
+            Func<Task<HttpWebRequest>, Task<T>> result =
+                task =>
+                {
+                    return task.ContinueWith(requestResource).Unwrap()
+                        .ContinueWith(readResult)
+                        .ContinueWith(parseResult).Unwrap();
+                };
+
+            return result;
         }
     }
 }

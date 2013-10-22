@@ -764,7 +764,7 @@
 
         #endregion
 
-        private Task<Uri> GetBaseUriAsync(CancellationToken cancellationToken)
+        protected override Task<Uri> GetBaseUriAsync(CancellationToken cancellationToken)
         {
             if (_baseUri != null)
             {
@@ -822,149 +822,11 @@
                 });
         }
 
-        private Task<Tuple<IdentityToken, Uri>> AuthenticateServiceAsync(CancellationToken cancellationToken)
+        protected override HttpWebRequest PrepareRequestImpl(HttpMethod method, IdentityToken identityToken, UriTemplate template, Uri baseUri, IDictionary<string, string> parameters, Func<Uri, Uri> uriTransform)
         {
-            Task<IdentityToken> authenticate;
-            IIdentityService identityService = IdentityProvider as IIdentityService;
-            if (identityService != null)
-                authenticate = identityService.GetTokenAsync(GetDefaultIdentity(null));
-            else
-                authenticate = Task.Factory.StartNew(() => IdentityProvider.GetToken(GetDefaultIdentity(null)));
-
-            Func<Task<IdentityToken>, Task<Tuple<IdentityToken, Uri>>> getBaseUri =
-                task =>
-                {
-                    Task[] tasks = { task, GetBaseUriAsync(cancellationToken) };
-                    return Task.Factory.ContinueWhenAll(tasks,
-                        ts =>
-                        {
-                            Task<IdentityToken> first = (Task<IdentityToken>)ts[0];
-                            Task<Uri> second = (Task<Uri>)ts[1];
-                            return Tuple.Create(first.Result, second.Result);
-                        });
-                };
-
-            return authenticate.ContinueWith(getBaseUri).Unwrap();
-        }
-
-        private Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> PrepareRequestAsyncFunc(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters)
-        {
-            return 
-                task =>
-                {
-                    Uri baseUri = task.Result.Item2;
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(template.BindByName(baseUri, parameters));
-                    request.Method = method.ToString().ToUpperInvariant();
-                    request.Accept = JsonRequestSettings.JsonContentType;
-                    request.Headers["X-Auth-Token"] = task.Result.Item1.Id;
-                    request.Headers["Client-Id"] = _clientId.ToString("D");
-                    request.UserAgent = UserAgentGenerator.UserAgent;
-                    request.Timeout = (int)TimeSpan.FromSeconds(14400).TotalMilliseconds;
-                    if (ConnectionLimit.HasValue)
-                        request.ServicePoint.ConnectionLimit = ConnectionLimit.Value;
-
-                    return request;
-                };
-        }
-
-        private Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> PrepareRequestAsyncFunc<TBody>(HttpMethod method, UriTemplate template, IDictionary<string, string> parameters, TBody body)
-        {
-            return 
-                task =>
-                {
-                    Uri baseUri = task.Result.Item2;
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(template.BindByName(baseUri, parameters));
-                    request.Method = method.ToString().ToUpperInvariant();
-                    request.Accept = JsonRequestSettings.JsonContentType;
-                    request.Headers["X-Auth-Token"] = task.Result.Item1.Id;
-                    request.Headers["Client-Id"] = _clientId.ToString("D");
-                    request.UserAgent = UserAgentGenerator.UserAgent;
-                    request.Timeout = (int)TimeSpan.FromSeconds(14400).TotalMilliseconds;
-                    if (ConnectionLimit.HasValue)
-                        request.ServicePoint.ConnectionLimit = ConnectionLimit.Value;
-
-                    string bodyText = JsonConvert.SerializeObject(body);
-                    byte[] encodedBody = Encoding.UTF8.GetBytes(bodyText);
-                    request.ContentType = JsonRequestSettings.JsonContentType + "; charset=UTF-8";
-                    request.ContentLength = encodedBody.Length;
-
-                    Task<Stream> streamTask = Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream(null, null), request.EndGetRequestStream);
-                    return
-                        streamTask.ContinueWith(subTask =>
-                        {
-                            using (Stream stream = subTask.Result)
-                            {
-                                stream.Write(encodedBody, 0, encodedBody.Length);
-                            }
-
-                            return request;
-                        });
-                };
-        }
-
-        private Func<Task<HttpWebRequest>, Task<string>> GetResponseAsyncFunc(CancellationToken cancellationToken)
-        {
-            Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
-                task =>
-                {
-                    return task.Result.GetResponseAsync(cancellationToken);
-                };
-            Func<Task<WebResponse>, string> readResult =
-                task =>
-                {
-                    using (StreamReader reader = new StreamReader(task.Result.GetResponseStream()))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                };
-
-            Func<Task<HttpWebRequest>, Task<string>> result =
-                task =>
-                {
-                    return task.ContinueWith(requestResource).Unwrap()
-                        .ContinueWith(readResult);
-                };
-
-            return result;
-        }
-
-        private Func<Task<HttpWebRequest>, Task<T>> GetResponseAsyncFunc<T>(CancellationToken cancellationToken, Func<Task<Tuple<HttpWebResponse, string>>, Task<T>> parseResult = null)
-        {
-            Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
-                task =>
-                {
-                    return task.Result.GetResponseAsync(cancellationToken);
-                };
-            Func<Task<WebResponse>, Tuple<HttpWebResponse, string>> readResult =
-                task =>
-                {
-                    using (StreamReader reader = new StreamReader(task.Result.GetResponseStream()))
-                    {
-                        return Tuple.Create((HttpWebResponse)task.Result, reader.ReadToEnd());
-                    }
-                };
-            if (parseResult == null)
-            {
-                parseResult =
-                    task =>
-                    {
-#if NET35
-                        return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(task.Result.Item2));
-#else
-                        return JsonConvert.DeserializeObjectAsync<T>(task.Result.Item2);
-#endif
-                    };
-            }
-
-            Func<Task<HttpWebRequest>, Task<T>> result =
-                task =>
-                {
-                    return task.ContinueWith(requestResource).Unwrap()
-                        .ContinueWith(readResult)
-                        .ContinueWith(parseResult).Unwrap();
-                };
-
-            return result;
+            HttpWebRequest request = base.PrepareRequestImpl(method, identityToken, template, baseUri, parameters, uriTransform);
+            request.Headers["Client-Id"] = _clientId.ToString("D");
+            return request;
         }
     }
 }
