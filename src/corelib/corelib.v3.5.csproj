@@ -314,6 +314,8 @@
     <Compile Include="Providers\Rackspace\Objects\Response\UserImpersonationResponse.cs" />
     <Compile Include="Providers\Rackspace\Validators\HttpResponseCodeValidator.cs" />
     <Compile Include="Providers\Rackspace\Validators\NamespaceDoc.cs" />
+    <Compile Include="Providers\Rackspace\WebRequestEventArgs.cs" />
+    <Compile Include="Providers\Rackspace\WebResponseEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="corelib.nuspec" />

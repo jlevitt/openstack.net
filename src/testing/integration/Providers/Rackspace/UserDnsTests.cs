@@ -645,7 +645,19 @@
 
         private IDnsService CreateProvider()
         {
-            return new CloudDnsProvider(Bootstrapper.Settings.TestIdentity, null, false, null, null);
+            CloudDnsProvider provider = new CloudDnsProvider(Bootstrapper.Settings.TestIdentity, null, false, null, null);
+            provider.BeforeAsyncWebRequest +=
+                (sender, e) =>
+                {
+                    Console.WriteLine("{0} (Request) {1} {2}", DateTime.Now, e.Request.Method, e.Request.RequestUri);
+                };
+            provider.AfterAsyncWebResponse +=
+                (sender, e) =>
+                {
+                    Console.WriteLine("{0} (Result {1}) {2}", DateTime.Now, e.Response.StatusCode, e.Response.ResponseUri);
+                };
+
+            return provider;
         }
     }
 }

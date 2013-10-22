@@ -652,6 +652,17 @@
         private IQueueingService CreateProvider()
         {
             var provider = new CloudQueuesProvider(Bootstrapper.Settings.TestIdentity, null, Guid.NewGuid(), false, null, null);
+            provider.BeforeAsyncWebRequest +=
+                (sender, e) =>
+                {
+                    Console.WriteLine("{0} (Request) {1} {2}", DateTime.Now, e.Request.Method, e.Request.RequestUri);
+                };
+            provider.AfterAsyncWebResponse +=
+                (sender, e) =>
+                {
+                    Console.WriteLine("{0} (Result {1}) {2}", DateTime.Now, e.Response.StatusCode, e.Response.ResponseUri);
+                };
+
             provider.ConnectionLimit = 80;
             return provider;
         }

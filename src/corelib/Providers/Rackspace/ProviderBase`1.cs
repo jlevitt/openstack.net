@@ -882,11 +882,30 @@ namespace net.openstack.Providers.Rackspace
             return authenticate.ContinueWith(getBaseUri).Unwrap();
         }
 
+        public event EventHandler<WebRequestEventArgs> BeforeAsyncWebRequest;
+
+        public event EventHandler<WebResponseEventArgs> AfterAsyncWebResponse;
+
+        protected virtual void OnBeforeAsyncWebRequest(HttpWebRequest request)
+        {
+            var handler = BeforeAsyncWebRequest;
+            if (handler != null)
+                handler(this, new WebRequestEventArgs(request));
+        }
+
+        protected virtual void OnAfterAsyncWebResponse(HttpWebResponse response)
+        {
+            var handler = AfterAsyncWebResponse;
+            if (handler != null)
+                handler(this, new WebResponseEventArgs(response));
+        }
+
         protected virtual Func<Task<HttpWebRequest>, Task<string>> GetResponseAsyncFunc(CancellationToken cancellationToken)
         {
             Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
                 task =>
                 {
+                    OnBeforeAsyncWebRequest(task.Result);
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
             Func<Task<WebResponse>, string> readResult =
@@ -908,6 +927,7 @@ namespace net.openstack.Providers.Rackspace
                         response = (HttpWebResponse)task.Result;
                     }
 
+                    OnAfterAsyncWebResponse(response);
                     using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                     {
                         string body = reader.ReadToEnd();
@@ -938,6 +958,7 @@ namespace net.openstack.Providers.Rackspace
             Func<Task<HttpWebRequest>, Task<WebResponse>> requestResource =
                 task =>
                 {
+                    OnBeforeAsyncWebRequest(task.Result);
                     return task.Result.GetResponseAsync(cancellationToken);
                 };
             Func<Task<WebResponse>, Tuple<HttpWebResponse, string>> readResult =
@@ -959,6 +980,7 @@ namespace net.openstack.Providers.Rackspace
                         response = (HttpWebResponse)task.Result;
                     }
 
+                    OnAfterAsyncWebResponse(response);
                     using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                     {
                         string body = reader.ReadToEnd();
