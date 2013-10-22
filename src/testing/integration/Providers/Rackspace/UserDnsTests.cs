@@ -510,6 +510,8 @@
 
                     };
                 DnsJob<DnsRecordsList> recordsResponse = await provider.AddRecordsAsync(domainId, recordConfigurations, DnsCompletionOption.RequestCompleted, cancellationTokenSource.Token, null);
+                Assert.IsNotNull(recordsResponse.Response);
+                Assert.IsNotNull(recordsResponse.Response.Records);
                 DnsRecord[] records = recordsResponse.Response.Records.ToArray();
 
                 foreach (var record in records)
