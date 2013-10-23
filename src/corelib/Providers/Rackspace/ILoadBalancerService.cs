@@ -2,12 +2,97 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
+    using net.openstack.Core;
     using net.openstack.Providers.Rackspace.Objects;
 
     public interface ILoadBalancerService
     {
+        #region Load Balancers
+
+        /// <summary>
+        /// Gets a collection of current load balancers.
+        /// </summary>
+        /// <param name="markerId">The <see cref="LoadBalancer.Id"/> of the last item in the previous list. Used for <see href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Paginated_Collections-d1e786.html">pagination</see>. If the value is <c>null</c>, the list starts at the beginning.</param>
+        /// <param name="limit">Indicates the maximum number of items to return. Used for <see href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Paginated_Collections-d1e786.html">pagination</see>. If the value is <c>null</c>, a provider-specific default value is used.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a collection of
+        /// <see cref="LoadBalancer"/> objects describing the current load balancers.
+        /// </returns>
+        /// <exception cref="ArgumentException">If <paramref name="markerId"/> is empty.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="limit"/> is less than or equal to 0.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Load_Balancers-d1e1367.html">List Load Balancers (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<IEnumerable<LoadBalancer>> ListLoadBalancersAsync(string markerId, int? limit, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets detailed information about a specific load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a <see cref="LoadBalancer"/>
+        /// object containing detailed information about the specified load balancer.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Load_Balancer_Details-d1e1522.html">List Load Balancer Details (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<LoadBalancer> GetLoadBalancerAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates a new load balancer.
+        /// </summary>
+        /// <param name="configuration">The configuration for the new load balancer.</param>
+        /// <param name="completionOption">Specifies when the <see cref="Task"/> representing the asynchronous server operation should be considered complete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <param name="progress">An optional callback object to receive progress notifications, if <paramref name="completionOption"/> is <see cref="DnsCompletionOption.RequestCompleted"/>. If this is <c>null</c>, no progress notifications are sent.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the task completes successfully,
+        /// the <see cref="Task{TResult}.Result"/> property will return a <see cref="LoadBalancer"/> object
+        /// describing the new load balancer. If <paramref name="completionOption"/> is
+        /// <see cref="DnsCompletionOption.RequestCompleted"/>, the task will not be considered complete until
+        /// the load balancer transitions out of the <see cref="LoadBalancerStatus.Build"/> state.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerConfiguration"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="completionOption"/> is not a valid <see cref="DnsCompletionOption"/>.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Load_Balancer_Details-d1e1522.html">List Load Balancer Details (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<LoadBalancer> CreateLoadBalancerAsync(LoadBalancerConfiguration configuration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
+
+        Task UpdateLoadBalancerAsync();
+
+        /// <summary>
+        /// Removes a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Load_Balancer-d1e2093.html">Remove Load Balancer (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveLoadBalancerAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
+
+        /// <summary>
+        /// Removes one or more load balancers.
+        /// </summary>
+        /// <param name="loadBalancerIds">The IDs of load balancers to remove. These is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerIds"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerIds"/> contains any <c>null</c> or empty values.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Load_Balancer-d1e2093.html">Remove Load Balancer (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveLoadBalancerRangeAsync(IEnumerable<string> loadBalancerIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer[]> progress);
+
+        #endregion Load Balancers
+
         #region Error Page
 
         /// <summary>
@@ -85,6 +170,202 @@
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Load_Balancer_Stats-d1e1524.html">List Load Balancer Stats (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
         Task<LoadBalancerStatistics> GetStatisticsAsync(string loadBalancerId, CancellationToken cancellationToken);
 
+        #endregion Load Balancer Statistics
+
+        #region Nodes
+
+        /// <summary>
+        /// List the load balancer nodes associated with a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a collection of
+        /// <see cref="Node"/> objects describing the load balancer nodes associated with the specified
+        /// load balancer.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Nodes-d1e2218.html">List Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<IEnumerable<Node>> ListNodesAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get detailed information about a load balancer node.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeId">The load balancer node ID. This is obtained from <see cref="Node.Id">Node.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a <see cref="Node"/>
+        /// object describing the specified load balancer node.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is empty.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/List_Nodes-d1e2218.html">List Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<Node> GetNodeAsync(string loadBalancerId, string nodeId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Add a node to a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeConfiguration">A <see cref="NodeConfiguration"/> object describing the load balancer node to add.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a <see cref="Node"/>
+        /// object describing the new load balancer node.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeConfiguration"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Add_Nodes-d1e2379.html">Add Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<Node> AddNodeAsync(string loadBalancerId, NodeConfiguration nodeConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress);
+
+        /// <summary>
+        /// Add one or more nodes to a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeConfiguration">A collection of <see cref="NodeConfiguration"/> objects describing the load balancer nodes to add.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a collection of
+        /// <see cref="Node"/> objects describing the new load balancer nodes.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeConfiguration"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeConfiguration"/> contains any <c>null</c> values.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Add_Nodes-d1e2379.html">Add Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<IEnumerable<Node>> AddNodeRangeAsync(string loadBalancerId, IEnumerable<NodeConfiguration> nodeConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node[]> progress);
+
+        /// <summary>
+        /// Update the configuration of a load balancer node.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeId">The load balancer node IDs. This is obtained from <see cref="Node.Id">Node.Id</see>.</param>
+        /// <param name="condition">The new condition for the node, which determines its role within the load balancer. If this value is <c>null</c>, the existing value for the node is not changed.</param>
+        /// <param name="type">The type of the node. If this value is <c>null</c>, the existing value for the node is not changed.</param>
+        /// <param name="weight">The weight of the node (for weighted load balancer algorithms). If this value is <c>null</c>, the existing value for the node is not changed.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is empty.</para>
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="weight"/> is less than 0.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Modify_Nodes-d1e2503.html">Modify Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task UpdateNodeAsync(string loadBalancerId, string nodeId, NodeCondition condition, NodeType type, int? weight, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress);
+
+        /// <summary>
+        /// Remove a nodes from a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeId">The load balancer node IDs. This is obtained from <see cref="Node.Id">Node.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeId"/> is empty.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Nodes-d1e2675.html">Remove Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveNodeAsync(string loadBalancerId, string nodeId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress);
+
+        /// <summary>
+        /// Remove one or more nodes from a load balancer.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="nodeIds">The load balancer node IDs of nodes to remove. These are obtained from <see cref="Node.Id">Node.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="loadBalancerId"/> is <c>null</c>.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeIds"/> is <c>null</c>.</para>
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="nodeIds"/> contains any <c>null</c> or empty values.</para>
+        /// </exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Nodes-d1e2675.html">Remove Nodes (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task RemoveNodeRangeAsync(string loadBalancerId, IEnumerable<string> nodeIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node[]> progress);
+
+        /// <summary>
+        /// List the service events for a load balancer node.
+        /// </summary>
+        /// <param name="loadBalancerId">The load balancer ID. This is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="marker">The <see cref="NodeServiceEvent.Id"/> of the last item in the previous list. Used for <see href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Paginated_Collections-d1e786.html">pagination</see>. If the value is <c>null</c>, the list starts at the beginning.</param>
+        /// <param name="limit">Indicates the maximum number of items to return. Used for <see href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Paginated_Collections-d1e786.html">pagination</see>. If the value is <c>null</c>, a provider-specific default value is used.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>
+        /// A <see cref="Task"/> object representing the asynchronous operation. When the operation
+        /// completes, the <see cref="Task{TResult}.Result"/> property will contain a collection of
+        /// <see cref="NodeService"/> objects describing the service events for the load balancer node.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="loadBalancerId"/> is empty.
+        /// <para>-or-</para>
+        /// <para>If <paramref name="marker"/> is empty.</para>
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="limit"/> is less than or equal to 0.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Node-Events-d1e264.html">View Node Service Events (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        Task<IEnumerable<NodeServiceEvent>> ListNodeServiceEvents(string loadBalancerId, string marker, int? limit, CancellationToken cancellationToken);
+
+        #endregion Nodes
+
+        #region Virtual IPs
+
+        Task ListVirtualAddressesAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        //Task AddVirtualAddressAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
+
+        Task RemoveVirtualAddressAsync(string loadBalancerId, string virtualAddressId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
+
+        Task RemoveVirtualAddressRangeAsync(string loadBalancerId, IEnumerable<string> virtualAddressId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
+
+        #endregion Virtual IPs
+
         #region Allowed Domains
 
         /// <summary>
@@ -101,6 +382,44 @@
         Task<IEnumerable<string>> ListAllowedDomainsAsync(CancellationToken cancellationToken);
 
         #endregion Allowed Domains
+
+        #region Usage Reports
+
+        Task<IEnumerable<LoadBalancer>> ListBillableLoadBalancersAsync(DateTimeOffset startTime, DateTimeOffset endTime, int? offset, int? limit, CancellationToken cancellationToken);
+
+        Task<IEnumerable<LoadBalancerUsage>> ListAccountLevelUsageAsync(DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken);
+
+        Task<IEnumerable<LoadBalancerUsage>> ListHistoricalUsageAsync(string loadBalancerId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken);
+
+        Task<IEnumerable<LoadBalancerUsage>> ListCurrentUsageAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        #endregion Usage Reports
+
+        #region Access Lists
+
+        Task<IEnumerable<NetworkItem>> ListAccessListAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        Task CreateAccessListAsync(string loadBalancerId, NetworkItem networkItem, CancellationToken cancellationToken);
+
+        Task CreateAccessListAsync(string loadBalancerId, IEnumerable<NetworkItem> networkItems, CancellationToken cancellationToken);
+
+        Task RemoveAccessListAsync(string loadBalancerId, string networkItemId, CancellationToken cancellationToken);
+
+        Task RemoveAccessListAsync(string loadBalancerId, IEnumerable<string> networkItemIds, CancellationToken cancellationToken);
+
+        Task ClearAccessListAsync(string loadBalancerId, CancellationToken cancellationToken);
+
+        #endregion Access Lists
+
+        #region Monitors
+
+        Task GetHealthMonitorAsync();
+
+        Task SetHealthMonitorAsync(string loadBalancerId, HealthMonitor monitor, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<HealthMonitor> progress);
+
+        Task RemoveHealthMonitorAsync();
+
+        #endregion Monitors
 
         #region Sessions
 
@@ -156,7 +475,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Manage_Session_Persistence-d1e3733.html">Manage Session Persistence (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task SetSessionPersistenceAsync(string loadBalancerId, SessionPersistence sessionPersistence, CancellationToken cancellationToken);
+        Task SetSessionPersistenceAsync(string loadBalancerId, SessionPersistence sessionPersistence, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         /// <summary>
         /// Removes the session persistence configuration for a load balancer.
@@ -168,7 +487,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Manage_Session_Persistence-d1e3733.html">Manage Session Persistence (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task RemoveSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken);
+        Task RemoveSessionPersistenceAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         #endregion Sessions
 
@@ -201,7 +520,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Log_Connections-d1e3924.html">Log Connections (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task SetConnectionLoggingAsync(string loadBalancerId, bool enabled, CancellationToken cancellationToken);
+        Task SetConnectionLoggingAsync(string loadBalancerId, bool enabled, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         /// <summary>
         /// Gets the connection throttling configuration for a load balancer.
@@ -234,7 +553,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Throttle_Connections-d1e4057.html">Throttle Connections (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, CancellationToken cancellationToken);
+        Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         /// <summary>
         /// Removes the connection throttling configuration for a load balancer.
@@ -246,7 +565,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Throttle_Connections-d1e4057.html">Throttle Connections (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task RemoveThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken);
+        Task RemoveThrottlesAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         #endregion Connections
 
@@ -307,7 +626,7 @@
         /// <exception cref="ArgumentException">If <paramref name="loadBalancerId"/> is empty.</exception>
         /// <exception cref="WebException">If the REST request does not return successfully.</exception>
         /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/ContentCaching-d1e3358.html">Content Caching (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
-        Task SetContentCachingAsync(string loadBalancerId, bool enabled, CancellationToken cancellationToken);
+        Task SetContentCachingAsync(string loadBalancerId, bool enabled, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress);
 
         #endregion Content Caching
 
@@ -346,6 +665,10 @@
         Task<IEnumerable<LoadBalancingAlgorithm>> ListAlgorithmsAsync(CancellationToken cancellationToken);
 
         #endregion Algorithms
+
+        #region SSL Termination
+
+        #endregion SSL Termination
 
         #region Metadata
 

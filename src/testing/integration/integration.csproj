@@ -82,6 +82,7 @@
     <Compile Include="Providers\Rackspace\UserComputeTests.cs" />
     <Compile Include="Providers\Rackspace\UserDnsTests.cs" />
     <Compile Include="Providers\Rackspace\UserIdentityTests.cs" />
+    <Compile Include="Providers\Rackspace\UserLoadBalancerTests.cs" />
     <Compile Include="Providers\Rackspace\UserNetworksTests.cs" />
     <Compile Include="Providers\Rackspace\UserObjectStorageTests.cs" />
     <Compile Include="Providers\Rackspace\UserQueuesTests.cs" />

@@ -17,9 +17,9 @@
     using net.openstack.Providers.Rackspace.Validators;
     using Newtonsoft.Json;
     using CancellationToken = System.Threading.CancellationToken;
-    using StreamReader = System.IO.StreamReader;
     using JsonRequestSettings = JSIStudios.SimpleRESTServices.Client.Json.JsonRequestSettings;
     using Stream = System.IO.Stream;
+    using StreamReader = System.IO.StreamReader;
 
     public class CloudLoadBalancerProvider : ProviderBase<ILoadBalancerService>, ILoadBalancerService
     {
@@ -43,6 +43,180 @@
         }
 
         #region ILoadBalancerService Members
+
+        /// <inheritdoc/>
+        public Task<IEnumerable<LoadBalancer>> ListLoadBalancersAsync(string markerId, int? limit, CancellationToken cancellationToken)
+        {
+            if (limit < 0)
+                throw new ArgumentOutOfRangeException("limit");
+
+            UriTemplate template = new UriTemplate("/loadbalancers?markerId={markerId}&limit={limit}");
+            var parameters = new Dictionary<string, string>();
+            if (markerId != null)
+                parameters.Add("markerId", markerId);
+            if (limit != null)
+                parameters.Add("limit", limit.ToString());
+
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<ListLoadBalancersResponse>> requestResource =
+                GetResponseAsyncFunc<ListLoadBalancersResponse>(cancellationToken);
+
+            Func<Task<ListLoadBalancersResponse>, IEnumerable<LoadBalancer>> resultSelector =
+                task => (task.Result != null ? task.Result.LoadBalancers : null) ?? Enumerable.Empty<LoadBalancer>();
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<LoadBalancer> GetLoadBalancerAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}");
+            var parameters = new Dictionary<string, string> { { "loadBalancerId", loadBalancerId } };
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.GET, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerResponse>, LoadBalancer> resultSelector =
+                task => task.Result.LoadBalancer;
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        /// <inheritdoc/>
+        public Task<LoadBalancer> CreateLoadBalancerAsync(LoadBalancerConfiguration configuration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
+        {
+            if (configuration == null)
+                throw new ArgumentNullException("configuration");
+
+            UriTemplate template = new UriTemplate("/loadbalancers");
+            var parameters = new Dictionary<string, string>();
+
+            CreateLoadBalancerRequest requestBody = new CreateLoadBalancerRequest(configuration);
+            Func<Task<Tuple<IdentityToken, Uri>>, Task<HttpWebRequest>> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.POST, template, parameters, requestBody);
+
+            Func<Task<HttpWebRequest>, Task<GetLoadBalancerResponse>> requestResource =
+                GetResponseAsyncFunc<GetLoadBalancerResponse>(cancellationToken);
+
+            Func<Task<GetLoadBalancerResponse>, LoadBalancer> resultSelector =
+                task =>
+                {
+                    LoadBalancer loadBalancer = task.Result.LoadBalancer;
+                    if (loadBalancer != null && completionOption == DnsCompletionOption.RequestCompleted)
+                        loadBalancer = WaitForLoadBalancerToLeaveStateAsync(loadBalancer.Id, LoadBalancerStatus.Build, cancellationToken, progress).Result;
+
+                    return loadBalancer;
+                };
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest).Unwrap()
+                .ContinueWith(requestResource).Unwrap()
+                .ContinueWith(resultSelector);
+        }
+
+        public Task UpdateLoadBalancerAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveLoadBalancerAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
+        {
+            if (loadBalancerId == null)
+                throw new ArgumentNullException("loadBalancerId");
+            if (string.IsNullOrEmpty(loadBalancerId))
+                throw new ArgumentException("loadBalancerId cannot be empty");
+
+            UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}");
+            var parameters = new Dictionary<string, string> { { "loadBalancerId", loadBalancerId } };
+            Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+
+            Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                GetResponseAsyncFunc(cancellationToken);
+
+            return AuthenticateServiceAsync(cancellationToken)
+                .ContinueWith(prepareRequest)
+                .ContinueWith(requestResource).Unwrap();
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveLoadBalancerRangeAsync(IEnumerable<string> loadBalancerIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer[]> progress)
+        {
+            if (loadBalancerIds == null)
+                throw new ArgumentNullException("loadBalancerIds");
+
+            return RemoveLoadBalancerRangeAsync(loadBalancerIds.ToArray(), completionOption, cancellationToken, progress);
+        }
+
+        /// <summary>
+        /// Removes one or more load balancers.
+        /// </summary>
+        /// <param name="loadBalancerIds">The IDs of load balancers to remove. These is obtained from <see cref="LoadBalancer.Id">LoadBalancer.Id</see>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that the task will observe.</param>
+        /// <returns>A <see cref="Task"/> object representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="loadBalancerIds"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="loadBalancerIds"/> contains any <c>null</c> or empty values.</exception>
+        /// <exception cref="WebException">If the REST request does not return successfully.</exception>
+        /// <seealso href="http://docs.rackspace.com/loadbalancers/api/v1.0/clb-devguide/content/Remove_Load_Balancer-d1e2093.html">Remove Load Balancer (Rackspace Cloud Load Balancers Developer Guide - API v1.0)</seealso>
+        public Task RemoveLoadBalancerRangeAsync(string[] loadBalancerIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer[]> progress)
+        {
+            if (loadBalancerIds == null)
+                throw new ArgumentNullException("loadBalancerIds");
+            if (loadBalancerIds.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("loadBalancerIds cannot contain any null or empty values", "loadBalancerIds");
+
+            if (loadBalancerIds.Length == 0)
+            {
+                return CompletedTask.Default;
+            }
+            else if (loadBalancerIds.Length == 1)
+            {
+                IProgress<LoadBalancer> wrapper = null;
+                if (progress != null)
+                    wrapper = new ArrayElementProgressWrapper<LoadBalancer>(progress);
+
+                return RemoveLoadBalancerAsync(loadBalancerIds[0], completionOption, cancellationToken, wrapper);
+            }
+            else
+            {
+                UriTemplate template = new UriTemplate("/loadbalancers?id={id}");
+                var parameters = new Dictionary<string, string> { { "id", string.Join(",", loadBalancerIds) } };
+
+                Func<Uri, Uri> uriTransform =
+                    uri =>
+                    {
+                        string path = uri.GetLeftPart(UriPartial.Path);
+                        string query = uri.Query.Replace(",", "&id=").Replace("%2c", "&id=");
+                        return new Uri(path + query);
+                    };
+
+                Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, uriTransform);
+
+                Func<Task<HttpWebRequest>, Task<string>> requestResource =
+                    GetResponseAsyncFunc(cancellationToken);
+
+                return AuthenticateServiceAsync(cancellationToken)
+                    .ContinueWith(prepareRequest)
+                    .ContinueWith(requestResource).Unwrap();
+            }
+        }
 
         /// <inheritdoc/>
         public Task<string> GetErrorPageAsync(string loadBalancerId, CancellationToken cancellationToken)
@@ -175,6 +349,61 @@
                 .ContinueWith(requestResource).Unwrap();
         }
 
+        public Task<IEnumerable<Node>> ListNodesAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Node> GetNodeAsync(string loadBalancerId, string nodeId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Node> AddNodeAsync(string loadBalancerId, NodeConfiguration nodeConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Node>> AddNodeRangeAsync(string loadBalancerId, IEnumerable<NodeConfiguration> nodeConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node[]> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateNodeAsync(string loadBalancerId, string nodeId, NodeCondition condition, NodeType type, int? weight, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveNodeAsync(string loadBalancerId, string nodeId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveNodeRangeAsync(string loadBalancerId, IEnumerable<string> nodeIds, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<Node[]> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<NodeServiceEvent>> ListNodeServiceEvents(string loadBalancerId, string marker, int? limit, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ListVirtualAddressesAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveVirtualAddressAsync(string loadBalancerId, string virtualAddressId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveVirtualAddressRangeAsync(string loadBalancerId, IEnumerable<string> virtualAddressId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <inheritdoc/>
         public Task<IEnumerable<string>> ListAllowedDomainsAsync(CancellationToken cancellationToken)
         {
@@ -193,6 +422,56 @@
                 .ContinueWith(prepareRequest)
                 .ContinueWith(requestResource).Unwrap()
                 .ContinueWith(resultSelector);
+        }
+
+        public Task<IEnumerable<LoadBalancer>> ListBillableLoadBalancersAsync(DateTimeOffset startTime, DateTimeOffset endTime, int? offset, int? limit, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<LoadBalancerUsage>> ListAccountLevelUsageAsync(DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<LoadBalancerUsage>> ListHistoricalUsageAsync(string loadBalancerId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<LoadBalancerUsage>> ListCurrentUsageAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<NetworkItem>> ListAccessListAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateAccessListAsync(string loadBalancerId, NetworkItem networkItem, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateAccessListAsync(string loadBalancerId, IEnumerable<NetworkItem> networkItems, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveAccessListAsync(string loadBalancerId, string networkItemId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveAccessListAsync(string loadBalancerId, IEnumerable<string> networkItemIds, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ClearAccessListAsync(string loadBalancerId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
@@ -221,7 +500,7 @@
         }
 
         /// <inheritdoc/>
-        public Task SetSessionPersistenceAsync(string loadBalancerId, SessionPersistence sessionPersistence, CancellationToken cancellationToken)
+        public Task SetSessionPersistenceAsync(string loadBalancerId, SessionPersistence sessionPersistence, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -248,7 +527,7 @@
         }
 
         /// <inheritdoc/>
-        public Task RemoveSessionPersistenceAsync(string loadBalancerId, CancellationToken cancellationToken)
+        public Task RemoveSessionPersistenceAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -302,7 +581,7 @@
         }
 
         /// <inheritdoc/>
-        public Task SetConnectionLoggingAsync(string loadBalancerId, bool enabled, CancellationToken cancellationToken)
+        public Task SetConnectionLoggingAsync(string loadBalancerId, bool enabled, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -357,7 +636,7 @@
         }
 
         /// <inheritdoc/>
-        public Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, CancellationToken cancellationToken)
+        public Task UpdateThrottlesAsync(string loadBalancerId, ConnectionThrottles throttleConfiguration, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -384,7 +663,7 @@
         }
 
         /// <inheritdoc/>
-        public Task RemoveThrottlesAsync(string loadBalancerId, CancellationToken cancellationToken)
+        public Task RemoveThrottlesAsync(string loadBalancerId, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -438,7 +717,7 @@
         }
 
         /// <inheritdoc/>
-        public Task SetContentCachingAsync(string loadBalancerId, bool enabled, CancellationToken cancellationToken)
+        public Task SetContentCachingAsync(string loadBalancerId, bool enabled, DnsCompletionOption completionOption, CancellationToken cancellationToken, IProgress<LoadBalancer> progress)
         {
             if (loadBalancerId == null)
                 throw new ArgumentNullException("loadBalancerId");
@@ -847,20 +1126,23 @@
             }
             else
             {
-                List<string> queryString = new List<string>();
-                for (int i = 0; i < metadataIds.Length; i++)
-                    queryString.Add(string.Format("id={{id{0}}}", i));
-
-                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata&" + string.Join("&", queryString));
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/metadata?id={id}");
                 var parameters = new Dictionary<string, string>()
                 {
                     { "loadBalancerId", loadBalancerId },
+                    { "id", string.Join(",", metadataIds) }
                 };
-                for (int i = 0; i < metadataIds.Length; i++)
-                    parameters.Add("id" + i, metadataIds[i]);
+
+                Func<Uri, Uri> uriTransform =
+                    uri =>
+                    {
+                        string path = uri.GetLeftPart(UriPartial.Path);
+                        string query = uri.Query.Replace(",", "&id=").Replace("%2c", "&id=");
+                        return new Uri(path + query);
+                    };
 
                 Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
-                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, uriTransform);
 
                 Func<Task<HttpWebRequest>, Task<string>> requestResource =
                     GetResponseAsyncFunc(cancellationToken);
@@ -945,21 +1227,24 @@
             }
             else
             {
-                List<string> queryString = new List<string>();
-                for (int i = 0; i < metadataIds.Length; i++)
-                    queryString.Add(string.Format("id={{id{0}}}", i));
-
-                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata&" + string.Join("&", queryString));
+                UriTemplate template = new UriTemplate("/loadbalancers/{loadBalancerId}/nodes/{nodeId}/metadata?id={id}");
                 var parameters = new Dictionary<string, string>()
                 {
                     { "loadBalancerId", loadBalancerId },
-                    { "nodeId", nodeId }
+                    { "nodeId", nodeId },
+                    { "id", string.Join(",", metadataIds) }
                 };
-                for (int i = 0; i < metadataIds.Length; i++)
-                    parameters.Add("id" + i, metadataIds[i]);
+
+                Func<Uri, Uri> uriTransform =
+                    uri =>
+                    {
+                        string path = uri.GetLeftPart(UriPartial.Path);
+                        string query = uri.Query.Replace(",", "&id=").Replace("%2c", "&id=");
+                        return new Uri(path + query);
+                    };
 
                 Func<Task<Tuple<IdentityToken, Uri>>, HttpWebRequest> prepareRequest =
-                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters);
+                    PrepareRequestAsyncFunc(HttpMethod.DELETE, template, parameters, uriTransform);
 
                 Func<Task<HttpWebRequest>, Task<string>> requestResource =
                     GetResponseAsyncFunc(cancellationToken);
@@ -1016,6 +1301,24 @@
                     _baseUri = new Uri(endpoint.PublicURL);
                     return _baseUri;
                 });
+        }
+
+        private class ArrayElementProgressWrapper<T> : IProgress<T>
+        {
+            private readonly IProgress<T[]> _delegate;
+
+            public ArrayElementProgressWrapper(IProgress<T[]> @delegate)
+            {
+                if (@delegate == null)
+                    throw new ArgumentNullException("delegate");
+
+                _delegate = @delegate;
+            }
+
+            public void Report(T value)
+            {
+                _delegate.Report(new T[] { value });
+            }
         }
     }
 }

@@ -13,7 +13,6 @@ using net.openstack.Core.Exceptions;
 using net.openstack.Core.Exceptions.Response;
 using net.openstack.Core.Providers;
 using net.openstack.Core.Validators;
-using net.openstack.Providers.Rackspace.Objects;
 using net.openstack.Providers.Rackspace.Validators;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -1000,6 +999,8 @@ namespace net.openstack.Providers.Rackspace
                 parseResult =
                     task =>
                     {
+                        //Newtonsoft.Json.Linq.JObject deserialized = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(task.Result.Item2);
+                        //Console.WriteLine(JsonConvert.SerializeObject(deserialized, Formatting.Indented));
 #if NET35
                         return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(task.Result.Item2));
 #else

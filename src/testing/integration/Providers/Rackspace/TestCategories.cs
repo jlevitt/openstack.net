@@ -39,6 +39,12 @@
         public const string Compute = "Compute";
 
         /// <summary>
+        /// Load balancer service tests.
+        /// </summary>
+        /// <seealso cref="ILoadBalancerProvider"/>
+        public const string LoadBalancers = "LoadBalancers";
+
+        /// <summary>
         /// Queueing service tests.
         /// </summary>
         /// <seealso cref="IQueueingService"/>
